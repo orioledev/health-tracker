@@ -68,14 +68,14 @@ jobs:
             #  run: sudo apt-get update && sudo apt-get install -y rsync
 
             - name: Deploy with rsync
-              run: >
-                  rsync -avz --delete
-                      --exclude='.git'
-                      --exclude='.github'
-                      --exclude='tests'
-                      --exclude='var/cache/*'
-                      --exclude='var/log/*'
-                      --exclude='.env'
+              run: |
+                  rsync -avz --delete \
+                      --exclude='.git' \
+                      --exclude='.github' \
+                      --exclude='tests' \
+                      --exclude='var/cache/*' \
+                      --exclude='var/log/*' \
+                      --exclude='.env' \
                       ./app/ ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/var/wwwrep/ht/
 
             - name: Notify Rsync done
