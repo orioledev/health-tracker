@@ -51,9 +51,9 @@ jobs:
 
             - name: Create .env.local
               run: |
-                  cat > ./app/.env.local << EOF
+                  cat > ./app/.env.local << 'EOF'
                   APP_ENV=prod
-                  DATABASE_URL=postgresql://${{ secrets.PG_USER }}:${{ secrets.PG_PASS }}@${{ secrets.PG_HOST }}:${{ secrets.PG_PORT }}/${{ secrets.PG_DATABASE }}
+                  DATABASE_URL="postgresql://${{ secrets.PG_USER }}:${{ secrets.PG_PASS }}@${{ secrets.PG_HOST }}:${{ secrets.PG_PORT }}/${{ secrets.PG_DATABASE }}?serverVersion=17&charset=utf8"
                   TG_TOKEN=${{ secrets.TG_TOKEN }}
                   EOF
 
@@ -75,7 +75,6 @@ jobs:
                       --exclude='tests' \
                       --exclude='var/cache/*' \
                       --exclude='var/log/*' \
-                      --exclude='.env' \
                       ./app/ ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/var/wwwrep/ht/
 
             - name: Notify Rsync done
@@ -99,6 +98,7 @@ jobs:
                       mkdir -p var/cache var/log
 
                       # Запускаем миграции
+                      # Включить когда появятся
                       # php bin/console doctrine:migrations:migrate --no-interaction
 
                       # Очищаем кеш
@@ -108,9 +108,11 @@ jobs:
                       php bin/console cache:warmup --env=prod
 
                       # Устанавливаем права
-                      # sudo /usr/local/bin/deploy-permissions.sh
+                      # Включить когда появятся
+                      # sudo /var/wwwrep/deploy-permissions.sh
 
                       # Перезагружаем сервисы
+                      # Пока не нужно
                       # sudo systemctl reload php8.4-fpm
                       # sudo systemctl reload nginx
 
