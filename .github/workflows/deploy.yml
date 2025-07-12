@@ -68,13 +68,7 @@ jobs:
             #  run: sudo apt-get update && sudo apt-get install -y rsync
 
             - name: Deploy with rsync
-              run: >
-                  rsync -avz --delete
-                      --exclude='.git'
-                      --exclude='.github'
-                      --exclude='tests'
-                      --exclude='.env'
-                      ./app ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/var/wwwrep/ht
+              run: rsync -avz --delete --exclude='.git' --exclude='.github' --exclude='tests' --exclude='.env' ./app ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/var/wwwrep/ht
 
             - name: Notify Rsync done
               uses: appleboy/telegram-action@master
