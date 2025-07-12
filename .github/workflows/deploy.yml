@@ -19,6 +19,7 @@ jobs:
 
             - name: Install dependencies
               run: composer install --no-dev --optimize-autoloader
+              working-directory: ./app
 
             - name: Create .env.local
               run: |
