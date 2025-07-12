@@ -1,0 +1,114 @@
+# .github/workflows/deploy.yml
+name: Deploy to Production
+
+on:
+    push:
+        branches: [ wf-test ]
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Setup PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: '8.4'
+                  extensions: mbstring, xml, ctype, iconv, intl, pdo_pgsql
+
+            - name: Install dependencies
+              run: composer install --no-dev --optimize-autoloader
+
+            - name: Create .env.local
+              run: |
+                  cat > ./app/.env.local << EOF
+                  APP_ENV=prod
+                  DATABASE_URL=postgresql://${{ secrets.PG_USER }}:${{ secrets.PG_PASS }}@${{ secrets.PG_HOST }}:${{ secrets.PG_PORT }}/${{ secrets.PG_DATABASE }}
+                  TG_TOKEN=${{ secrets.TG_TOKEN }}
+                  EOF
+
+            - name: Setup SSH key
+              run: |
+                  mkdir -p ~/.ssh
+                  echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
+                  chmod 600 ~/.ssh/id_rsa
+                  ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
+
+            - name: Deploy with rsync
+              run: |
+                  rsync -avz --delete \
+                    --exclude='.git' \
+                    --exclude='.github' \
+                    --exclude='tests' \
+                    --exclude='.env' \
+                    ./app ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/var/wwwrep/ht
+
+            - name: Run post-deploy commands
+              uses: appleboy/ssh-action@v1.0.0
+              with:
+                  host: ${{ secrets.HOST }}
+                  username: ${{ secrets.USERNAME }}
+                  key: ${{ secrets.SSH_KEY }}
+                  port: ${{ secrets.PORT }}
+                  script: |
+                      cd /var/wwwrep/ht
+
+                      # Создаем директории если их нет
+                      mkdir -p /var/wwwrep/cache/ht /var/wwwrep/log/ht
+
+                      # Запускаем миграции
+                      # php bin/console doctrine:migrations:migrate --no-interaction
+
+                      # Очищаем кеш
+                      php bin/console cache:clear --env=prod
+
+                      # Прогреваем кеш
+                      php bin/console cache:warmup --env=prod
+
+                      # Устанавливаем права
+                      # sudo /usr/local/bin/deploy-permissions.sh
+
+                      # Перезагружаем сервисы
+                      # sudo systemctl reload php8.4-fpm
+                      # sudo systemctl reload nginx
+
+            - name: Notify deployment start
+              uses: appleboy/telegram-action@master
+              with:
+                  to: 1585190,214835423,-1002673571309 #${{ secrets.TELEGRAM_TO }}
+                  token: 8011840196:AAFjQxwPzuE_sR5q-vjg_hlGExFLSVXInLA # ${{ secrets.TELEGRAM_TOKEN }}
+                  message: |
+                      🚀 Начинаем деплой
+                      Repository: ${{ github.repository }}
+                      Branch: ${{ github.ref_name }}
+                      Commit: ${{ github.sha }}
+                      Author: ${{ github.actor }}
+
+            - name: Notify on failure
+              if: failure()
+              uses: appleboy/telegram-action@master
+              with:
+                  to: 1585190,214835423,-1002673571309 #${{ secrets.TELEGRAM_TO }}
+                  token: 8011840196:AAFjQxwPzuE_sR5q-vjg_hlGExFLSVXInLA #${{ secrets.TELEGRAM_TOKEN }}
+                  message: |
+                      🚨 Деплой завершился с ошибкой!
+                      Repository: ${{ github.repository }}
+                      Branch: ${{ github.ref_name }}
+                      Commit: ${{ github.sha }}
+                      Author: ${{ github.actor }}
+
+                      Проверьте логи: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+            - name: Notify on success
+              if: success()
+              uses: appleboy/telegram-action@master
+              with:
+                  to: 1585190,214835423,-1002673571309 #${{ secrets.TELEGRAM_TO }}
+                  token: 8011840196:AAFjQxwPzuE_sR5q-vjg_hlGExFLSVXInLA #${{ secrets.TELEGRAM_TOKEN }}
+                  message: |
+                      ✅ Деплой успешно завершен!
+                      Repository: ${{ github.repository }}
+                      Branch: ${{ github.ref_name }}
+                      Commit: ${{ github.sha }}
+                      Author: ${{ github.actor }}
