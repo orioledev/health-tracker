@@ -93,12 +93,12 @@ jobs:
                       # Создаем директории если их нет
                       mkdir -p var/cache var/log
 
-                      # Запускаем миграции
-                      # Включить когда появятся
-                      # php bin/console doctrine:migrations:migrate --no-interaction
 
                       # Очищаем кеш
                       php bin/console cache:clear --env=prod
+
+                      # Запускаем миграции
+                      php bin/console doctrine:migrations:migrate --no-interaction
 
                       # Прогреваем кеш
                       php bin/console cache:warmup --env=prod
