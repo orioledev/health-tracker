@@ -10,7 +10,7 @@ use Doctrine\DBAL\Types\StringType;
 
 final class TelegramUsernameType extends StringType
 {
-    public const string TYPE_NAME = 'telegram_username_type';
+    public const string TYPE_NAME = 'telegram_username';
 
     public function getName(): string
     {
