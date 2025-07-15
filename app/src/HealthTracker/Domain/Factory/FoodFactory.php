@@ -15,9 +15,9 @@ final readonly class FoodFactory
         string $externalId,
         string $name,
         int $calories,
-        float $proteins,
-        float $fats,
-        float $carbohydrates,
+        string|float $proteins,
+        string|float $fats,
+        string|float $carbohydrates,
     ): Food
     {
         return new Food(

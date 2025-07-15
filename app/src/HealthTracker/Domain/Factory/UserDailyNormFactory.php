@@ -14,9 +14,9 @@ final readonly class UserDailyNormFactory
     public function create(
         User $user,
         int $calories,
-        float $proteins,
-        float $fats,
-        float $carbohydrates,
+        string|float $proteins,
+        string|float $fats,
+        string|float $carbohydrates,
         int $steps,
     ): UserDailyNorm
     {
