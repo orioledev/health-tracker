@@ -5,14 +5,10 @@ declare(strict_types=1);
 namespace App\HealthTracker\Domain\ValueObject\User;
 
 use App\Shared\Domain\ValueObject\AbstractValueObject;
-use Doctrine\DBAL\Types\Types;
-use Doctrine\ORM\Mapping as ORM;
 use InvalidArgumentException;
 
-#[ORM\Embeddable]
 final readonly class TelegramUserId extends AbstractValueObject
 {
-    #[ORM\Column(name: 'telegram_user_id', type: Types::BIGINT)]
     private int $value;
 
     /**

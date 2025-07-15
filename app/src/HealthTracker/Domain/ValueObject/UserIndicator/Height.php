@@ -6,7 +6,4 @@ namespace App\HealthTracker\Domain\ValueObject\UserIndicator;
 
 use App\Shared\Domain\ValueObject\AbstractPositiveIntValueObject;
 
-final readonly class Height extends AbstractPositiveIntValueObject
-{
-    protected int $value;
-}
+final readonly class Height extends AbstractPositiveIntValueObject {}
