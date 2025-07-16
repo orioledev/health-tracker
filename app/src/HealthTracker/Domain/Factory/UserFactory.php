@@ -15,7 +15,7 @@ final readonly class UserFactory
         int $telegramUserId,
         ?string $telegramUsername,
         string $firstName,
-        string $lastName,
+        ?string $lastName,
     ): User
     {
         return new User(
