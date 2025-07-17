@@ -15,6 +15,7 @@ abstract readonly class AbstractPositiveDecimalValueObject extends AbstractValue
     protected float $value;
 
     /**
+     * @param string|float $value
      * @throws InvalidArgumentException
      */
     public function __construct(string|float $value)
@@ -46,6 +47,8 @@ abstract readonly class AbstractPositiveDecimalValueObject extends AbstractValue
     }
 
     /**
+     * @param string $value
+     * @return void
      * @throws InvalidArgumentException
      */
     protected function assertValueIsDecimal(string $value): void
@@ -56,6 +59,8 @@ abstract readonly class AbstractPositiveDecimalValueObject extends AbstractValue
     }
 
     /**
+     * @param float $value
+     * @return void
      * @throws InvalidArgumentException
      */
     protected function assertValueIsPositive(float $value): void

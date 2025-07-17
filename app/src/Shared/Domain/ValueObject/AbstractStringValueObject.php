@@ -13,6 +13,7 @@ abstract readonly class AbstractStringValueObject extends AbstractValueObject
     protected string $value;
 
     /**
+     * @param string $value
      * @throws InvalidArgumentException
      */
     public function __construct(string $value)
@@ -37,6 +38,8 @@ abstract readonly class AbstractStringValueObject extends AbstractValueObject
     }
 
     /**
+     * @param string $value
+     * @return void
      * @throws InvalidArgumentException
      */
     protected function assertValueIsNotEmpty(string $value): void
@@ -47,6 +50,9 @@ abstract readonly class AbstractStringValueObject extends AbstractValueObject
     }
 
     /**
+     * @param string $value
+     * @param int $min
+     * @return void
      * @throws InvalidArgumentException
      */
     protected function assertValueLengthIsGte(string $value, int $min): void
@@ -59,6 +65,9 @@ abstract readonly class AbstractStringValueObject extends AbstractValueObject
     }
 
     /**
+     * @param string $value
+     * @param int $max
+     * @return void
      * @throws InvalidArgumentException
      */
     protected function assertValueLengthIsLte(string $value, int $max): void

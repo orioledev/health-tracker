@@ -12,6 +12,7 @@ final readonly class TelegramUserId extends AbstractValueObject
     private int $value;
 
     /**
+     * @param int $value
      * @throws InvalidArgumentException
      */
     public function __construct(int $value)
@@ -32,6 +33,8 @@ final readonly class TelegramUserId extends AbstractValueObject
     }
 
     /**
+     * @param int $value
+     * @return void
      * @throws InvalidArgumentException
      */
     protected function assertValueIsNotZero(int $value): void

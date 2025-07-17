@@ -11,6 +11,7 @@ abstract readonly class AbstractPositiveIntValueObject extends AbstractValueObje
     protected int $value;
 
     /**
+     * @param int $value
      * @throws InvalidArgumentException
      */
     public function __construct(int $value)
@@ -31,6 +32,8 @@ abstract readonly class AbstractPositiveIntValueObject extends AbstractValueObje
     }
 
     /**
+     * @param int $value
+     * @return void
      * @throws InvalidArgumentException
      */
     protected function assertValueIsPositive(int $value): void

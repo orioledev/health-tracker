@@ -28,6 +28,13 @@ final readonly class Macronutrients implements JsonSerializable
     #[ORM\Column(name: 'carbohydrates', type: Types::DECIMAL, precision: 6, scale: 2)]
     private(set) float $carbohydrates;
 
+    /**
+     * @param int $calories
+     * @param string|float $proteins
+     * @param string|float $fats
+     * @param string|float $carbohydrates
+     * @throws InvalidArgumentException
+     */
     public function __construct(
         int $calories,
         string|float $proteins,
@@ -53,6 +60,11 @@ final readonly class Macronutrients implements JsonSerializable
         );
     }
 
+    /**
+     * @param Macronutrients $other
+     * @return self
+     * @throws InvalidArgumentException
+     */
     public function subtract(self $other): self
     {
         $newCalories = $this->calories - $other->calories;
@@ -72,6 +84,11 @@ final readonly class Macronutrients implements JsonSerializable
         );
     }
 
+    /**
+     * @param float $factor
+     * @return self
+     * @throws InvalidArgumentException
+     */
     public function multiply(float $factor): self
     {
         if ($factor < 0) {
@@ -133,7 +150,7 @@ final readonly class Macronutrients implements JsonSerializable
 
     public function equals(self $other): bool
     {
-        return $this->calories == $other->calories
+        return $this->calories === $other->calories
             && abs($this->proteins - $other->proteins) < self::COMPARE_PRECISION
             && abs($this->fats - $other->fats) < self::COMPARE_PRECISION
             && abs($this->carbohydrates - $other->carbohydrates) < self::COMPARE_PRECISION;
@@ -171,6 +188,8 @@ final readonly class Macronutrients implements JsonSerializable
     }
 
     /**
+     * @param string|float $value
+     * @return float
      * @throws InvalidArgumentException
      */
     protected function normalizeDecimal(string|float $value): float
@@ -191,6 +210,8 @@ final readonly class Macronutrients implements JsonSerializable
     }
 
     /**
+     * @param string $value
+     * @return void
      * @throws InvalidArgumentException
      */
     protected function assertValueIsDecimal(string $value): void
@@ -201,6 +222,8 @@ final readonly class Macronutrients implements JsonSerializable
     }
 
     /**
+     * @param int|float $value
+     * @return void
      * @throws InvalidArgumentException
      */
     protected function assertValueIsNotNegative(int|float $value): void
