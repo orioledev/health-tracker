@@ -8,9 +8,20 @@ doctrine:
 
         profiling_collect_backtrace: '%kernel.debug%'
         use_savepoints: true
+        types:
+            user_id: App\HealthTracker\Infrastructure\Doctrine\DBAL\Types\User\UserIdType
+            food_id: App\HealthTracker\Infrastructure\Doctrine\DBAL\Types\Food\FoodIdType
+            meal_id: App\HealthTracker\Infrastructure\Doctrine\DBAL\Types\Meal\MealIdType
+            walk_id: App\HealthTracker\Infrastructure\Doctrine\DBAL\Types\Walk\WalkIdType
+            weight_measurement_id: App\HealthTracker\Infrastructure\Doctrine\DBAL\Types\WeightMeasurement\WeightMeasurementIdType
+            height: App\HealthTracker\Infrastructure\Doctrine\DBAL\Types\UserIndicator\HeightType
+            weight: App\HealthTracker\Infrastructure\Doctrine\DBAL\Types\Shared\WeightType
+            telegram_user_id: App\HealthTracker\Infrastructure\Doctrine\DBAL\Types\User\TelegramUserIdType
+            telegram_username: App\HealthTracker\Infrastructure\Doctrine\DBAL\Types\User\TelegramUsernameType
     orm:
         auto_generate_proxy_classes: true
         enable_lazy_ghost_objects: true
+        enable_native_lazy_objects: true
         report_fields_where_declared: true
         validate_xml_mapping: true
         naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
@@ -18,12 +29,18 @@ doctrine:
             Doctrine\DBAL\Platforms\PostgreSQLPlatform: identity
         auto_mapping: true
         mappings:
-            App:
+            HealthTracker_Entity:
                 type: attribute
                 is_bundle: false
-                dir: '%kernel.project_dir%/src/Entity'
-                prefix: 'App\Entity'
-                alias: App
+                dir: '%kernel.project_dir%/src/HealthTracker/Domain/Entity'
+                prefix: 'App\HealthTracker\Domain\Entity'
+                alias: HealthTracker_Entity
+            HealthTracker_ValueObject:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/HealthTracker/Domain/ValueObject'
+                prefix: 'App\HealthTracker\Domain\ValueObject'
+                alias: HealthTracker_ValueObject
         controller_resolver:
             auto_mapping: false
 
