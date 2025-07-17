@@ -16,5 +16,7 @@ interface UserRepositoryInterface
 
     public function findByTelegramUserIdOrFail(TelegramUserId $telegramUserId): User;
 
+    public function existsByTelegramUserId(TelegramUserId $telegramUserId): bool;
+
     public function save(User $user): void;
 }
