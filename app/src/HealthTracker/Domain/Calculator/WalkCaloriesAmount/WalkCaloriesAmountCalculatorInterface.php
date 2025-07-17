@@ -11,6 +11,6 @@ interface WalkCaloriesAmountCalculatorInterface
 {
     public function calculate(
         WalkCaloriesAmountCalculatorArgs $calculatorArgs,
-        StepsAmount $stepsAmount,
+        StepsAmount $steps,
     ): CaloriesAmount;
 }

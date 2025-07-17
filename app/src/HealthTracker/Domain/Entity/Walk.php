@@ -30,27 +30,27 @@ class Walk
     private(set) User $user;
 
     #[ORM\Embedded(class: StepsAmount::class, columnPrefix: false)]
-    private(set) StepsAmount $stepsAmount;
+    private(set) StepsAmount $steps;
 
     #[ORM\Embedded(class: CaloriesAmount::class, columnPrefix: false)]
-    private(set) CaloriesAmount $caloriesAmount;
+    private(set) CaloriesAmount $calories;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private(set) DateTimeImmutable $createdAt;
 
     public function __construct(
         User $user,
-        StepsAmount $stepsAmount,
+        StepsAmount $steps,
         WalkCaloriesAmountCalculatorInterface $walkCaloriesAmountCalculator,
     )
     {
         $this->user = $user;
-        $this->stepsAmount = $stepsAmount;
+        $this->steps = $steps;
         $this->createdAt = new DateTimeImmutable();
 
-        $this->caloriesAmount = $walkCaloriesAmountCalculator->calculate(
+        $this->calories = $walkCaloriesAmountCalculator->calculate(
             WalkCaloriesAmountCalculatorArgs::fromEntity($this->user),
-            $this->stepsAmount
+            $this->steps
         );
     }
 }

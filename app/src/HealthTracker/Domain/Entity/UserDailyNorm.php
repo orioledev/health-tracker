@@ -13,7 +13,7 @@ use Doctrine\ORM\Mapping as ORM;
 class UserDailyNorm
 {
     #[ORM\Id]
-    #[ORM\OneToOne(targetEntity: User::class, inversedBy: 'userDailyNorm')]
+    #[ORM\OneToOne(targetEntity: User::class, inversedBy: 'dailyNorm')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private(set) User $user;
 

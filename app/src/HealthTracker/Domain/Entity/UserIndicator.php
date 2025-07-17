@@ -18,7 +18,7 @@ use Doctrine\ORM\Mapping as ORM;
 class UserIndicator
 {
     #[ORM\Id]
-    #[ORM\OneToOne(targetEntity: User::class, inversedBy: 'userIndicator')]
+    #[ORM\OneToOne(targetEntity: User::class, inversedBy: 'indicator')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private(set) User $user;
 

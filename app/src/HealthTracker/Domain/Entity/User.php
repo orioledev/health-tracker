@@ -48,15 +48,15 @@ class User
     }
 
     #[ORM\OneToOne(targetEntity: UserIndicator::class, mappedBy: 'user', cascade: ['persist'], orphanRemoval: true)]
-    public ?UserIndicator $userIndicator = null {
-        get => $this->userIndicator;
-        set => $this->userIndicator = $value;
+    public ?UserIndicator $indicator = null {
+        get => $this->indicator;
+        set => $this->indicator = $value;
     }
 
     #[ORM\OneToOne(targetEntity: UserDailyNorm::class, mappedBy: 'user', cascade: ['persist'], orphanRemoval: true)]
-    public ?UserDailyNorm $userDailyNorm = null {
-        get => $this->userDailyNorm;
-        set => $this->userDailyNorm = $value;
+    public ?UserDailyNorm $dailyNorm = null {
+        get => $this->dailyNorm;
+        set => $this->dailyNorm = $value;
     }
 
     /**
@@ -90,20 +90,20 @@ class User
 
     public function isFilled(bool $validateDailyNorm = true): bool
     {
-        return $this->hasUserIndicator()
-            && (!$validateDailyNorm || $this->hasUserDailyNorm())
-            && $this->userIndicator->isFilled()
+        return $this->hasIndicator()
+            && (!$validateDailyNorm || $this->hasDailyNorm())
+            && $this->indicator->isFilled()
             && $this->gender !== null
             && $this->birthdate !== null;
     }
 
-    public function hasUserIndicator(): bool
+    public function hasIndicator(): bool
     {
-        return $this->userIndicator !== null;
+        return $this->indicator !== null;
     }
 
-    public function hasUserDailyNorm(): bool
+    public function hasDailyNorm(): bool
     {
-        return $this->userDailyNorm !== null;
+        return $this->dailyNorm !== null;
     }
 }

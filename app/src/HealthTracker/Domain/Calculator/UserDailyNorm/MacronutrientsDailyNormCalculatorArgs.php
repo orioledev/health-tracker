@@ -8,7 +8,7 @@ use App\HealthTracker\Domain\Entity\User;
 use App\HealthTracker\Domain\Enum\ActivityLevel;
 use App\HealthTracker\Domain\Enum\Gender;
 use App\HealthTracker\Domain\Enum\WeightTargetType;
-use App\HealthTracker\Domain\Exception\InvalidCalculatorArgumentException;
+use App\HealthTracker\Domain\Exception\UserInfoNotFilledException;
 use App\HealthTracker\Domain\ValueObject\Shared\Weight;
 use App\HealthTracker\Domain\ValueObject\UserIndicator\Height;
 
@@ -26,21 +26,21 @@ readonly class MacronutrientsDailyNormCalculatorArgs
     /**
      * @param User $user
      * @return self
-     * @throws InvalidCalculatorArgumentException
+     * @throws UserInfoNotFilledException
      */
     public static function fromEntity(User $user): self
     {
         if (!$user->isFilled(false)) {
-            throw new InvalidCalculatorArgumentException('Не заполнены данные пользователя');
+            throw new UserInfoNotFilledException('Не заполнены данные пользователя');
         }
 
         return new self(
-            height: $user->userIndicator->height,
-            weight: $user->userIndicator->currentWeight,
+            height: $user->indicator->height,
+            weight: $user->indicator->currentWeight,
             gender: $user->gender,
             age: $user->getAge(),
-            activityLevel: $user->userIndicator->activityLevel,
-            weightTargetType: $user->userIndicator->weightTargetType,
+            activityLevel: $user->indicator->activityLevel,
+            weightTargetType: $user->indicator->weightTargetType,
         );
     }
 }

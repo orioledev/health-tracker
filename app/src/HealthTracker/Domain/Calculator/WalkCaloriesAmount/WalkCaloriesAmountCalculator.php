@@ -23,7 +23,7 @@ final readonly class WalkCaloriesAmountCalculator implements WalkCaloriesAmountC
 
     public function calculate(
         WalkCaloriesAmountCalculatorArgs $calculatorArgs,
-        StepsAmount $stepsAmount,
+        StepsAmount $steps,
     ): CaloriesAmount
     {
         $stepLength = $this->calculateStepLength(
@@ -33,7 +33,7 @@ final readonly class WalkCaloriesAmountCalculator implements WalkCaloriesAmountC
             $calculatorArgs->age
         );
 
-        $distance = $stepsAmount->value() * $stepLength;
+        $distance = $steps->value() * $stepLength;
 
         $caloriesAmount = round((self::SPEED_COEFFICIENT * $calculatorArgs->weight->value() * $distance) / 100_000);
 

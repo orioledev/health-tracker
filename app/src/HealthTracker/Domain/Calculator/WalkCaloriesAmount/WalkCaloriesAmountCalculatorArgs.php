@@ -6,7 +6,7 @@ namespace App\HealthTracker\Domain\Calculator\WalkCaloriesAmount;
 
 use App\HealthTracker\Domain\Entity\User;
 use App\HealthTracker\Domain\Enum\Gender;
-use App\HealthTracker\Domain\Exception\InvalidCalculatorArgumentException;
+use App\HealthTracker\Domain\Exception\UserInfoNotFilledException;
 use App\HealthTracker\Domain\ValueObject\Shared\Weight;
 use App\HealthTracker\Domain\ValueObject\UserIndicator\Height;
 
@@ -22,17 +22,17 @@ readonly class WalkCaloriesAmountCalculatorArgs
     /**
      * @param User $user
      * @return self
-     * @throws InvalidCalculatorArgumentException
+     * @throws UserInfoNotFilledException
      */
     public static function fromEntity(User $user): self
     {
         if (!$user->isFilled()) {
-            throw new InvalidCalculatorArgumentException('Не заполнены данные пользователя');
+            throw new UserInfoNotFilledException('Не заполнены данные пользователя');
         }
 
         return new self(
-            height: $user->userIndicator->height,
-            weight: $user->userIndicator->currentWeight,
+            height: $user->indicator->height,
+            weight: $user->indicator->currentWeight,
             gender: $user->gender,
             age: $user->getAge(),
         );
