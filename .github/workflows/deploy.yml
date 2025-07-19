@@ -72,8 +72,8 @@ jobs:
                       --exclude='.git' \
                       --exclude='.github' \
                       --exclude='tests' \
-                      --exclude='var/cache/*' \
-                      --exclude='var/log/*' \
+                      --filter="protect var/"
+                      --exclude='var/' \
                       ./app/ ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/var/wwwrep/ht/
 
             - name: Notify Rsync done
