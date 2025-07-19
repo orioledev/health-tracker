@@ -105,7 +105,7 @@ jobs:
 
                       # Устанавливаем права
                       # Включить когда появятся
-                      # sudo /var/wwwrep/deploy-permissions.sh
+                      sudo /var/wwwrep/deploy-permissions.sh
 
                       # Перезагружаем сервисы
                       # Пока не нужно
