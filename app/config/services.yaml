@@ -22,12 +22,3 @@ services:
         arguments:
             $config:
                 timeout: 30
-                base_uri: 'https://world.openfoodfacts.org/'
-
-    # Возможно эти 2 сработают автоматически и не нужны к указанию?
-#    App\Shared\Infrastructure\HttpClient\GuzzleHttpClient:
-#        arguments:
-#            $client: '@GuzzleHttp\Client'
-#
-#    App\Shared\Application\Interface\HttpClientInterface:
-#        alias: App\Shared\Infrastructure\HttpClient\GuzzleHttpClient
