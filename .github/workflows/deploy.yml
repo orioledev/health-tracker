@@ -53,7 +53,7 @@ jobs:
                   cat > ./app/.env.local << 'EOF'
                   APP_ENV=prod
                   APP_SECRET=${{ secrets.APP_SECRET }}
-                  APP_BASE_URL=${{ secrets.HOST }}
+                  APP_BASE_URL=${{ secrets.APP_BASE_URL }}
                   DATABASE_URL="postgresql://${{ secrets.PG_USER }}:${{ secrets.PG_PASS }}@${{ secrets.PG_HOST }}:${{ secrets.PG_PORT }}/${{ secrets.PG_DATABASE }}?serverVersion=17&charset=utf8"
                   TELEGRAM_BOT_TOKEN=${{ secrets.TG_TOKEN }}
                   TELEGRAM_ROUTE_SECRET=${{ secrets.TG_ROUTE_SECRET }}
