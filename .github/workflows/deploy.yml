@@ -1,0 +1,143 @@
+name: Deploy to Production
+
+on:
+    push:
+        branches: [ main, master ]
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Notify deployment start
+              uses: appleboy/telegram-action@master
+              with:
+                  to: ${{ secrets.TELEGRAM_NOTIFY_TO }}
+                  token:  ${{ secrets.TELEGRAM_NOTIFY_TOKEN }}
+                  message: |
+                      🚀 Начинаем деплой
+                      Repository: ${{ github.repository }}
+                      Branch: ${{ github.ref_name }}
+                      Commit: ${{ github.sha }}
+                      Author: ${{ github.actor }}
+
+            - name: Setup PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: '8.4'
+                  extensions: mbstring, xml, ctype, iconv, intl, pdo_pgsql
+
+            - name: Notify PHP install
+              uses: appleboy/telegram-action@master
+              with:
+                  to: ${{ secrets.TELEGRAM_NOTIFY_TO }}
+                  token:  ${{ secrets.TELEGRAM_NOTIFY_TOKEN }}
+                  message: ✅ PHP и extensions установлены.
+
+            - name: Install dependencies
+              run: composer install --no-dev --optimize-autoloader
+              working-directory: ./app
+              env:
+                  APP_ENV: prod
+
+            - name: Notify dependencies install
+              uses: appleboy/telegram-action@master
+              with:
+                  to: ${{ secrets.TELEGRAM_NOTIFY_TO }}
+                  token:  ${{ secrets.TELEGRAM_NOTIFY_TOKEN }}
+                  message: ✅ composer dependencies установлены.
+
+            - name: Create .env.local
+              run: |
+                  cat > ./app/.env.local << 'EOF'
+                  APP_ENV=prod
+                  DATABASE_URL="postgresql://${{ secrets.PG_USER }}:${{ secrets.PG_PASS }}@${{ secrets.PG_HOST }}:${{ secrets.PG_PORT }}/${{ secrets.PG_DATABASE }}?serverVersion=17&charset=utf8"
+                  TG_TOKEN=${{ secrets.TG_TOKEN }}
+                  EOF
+
+            - name: Setup SSH key
+              run: |
+                  mkdir -p ~/.ssh
+                  echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
+                  chmod 600 ~/.ssh/id_rsa
+                  ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
+
+            - name: Deploy with rsync
+              run: |
+                  rsync -avz --delete \
+                      --exclude='.git' \
+                      --exclude='.github' \
+                      --exclude='tests' \
+                      --exclude='var/cache/*' \
+                      --exclude='var/log/*' \
+                      ./app/ ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/var/wwwrep/ht/
+
+            - name: Notify Rsync done
+              uses: appleboy/telegram-action@master
+              with:
+                  to: ${{ secrets.TELEGRAM_NOTIFY_TO }}
+                  token:  ${{ secrets.TELEGRAM_NOTIFY_TOKEN }}
+                  message: ✅ Rsync закончен.
+
+            - name: Run post-deploy commands
+              uses: appleboy/ssh-action@v1.0.0
+              with:
+                  host: ${{ secrets.HOST }}
+                  username: ${{ secrets.USERNAME }}
+                  key: ${{ secrets.SSH_KEY }}
+                  port: ${{ secrets.PORT }}
+                  script: |
+                      cd /var/wwwrep/ht
+
+                      # Создаем директории если их нет
+                      mkdir -p var/cache var/log
+
+
+                      # Очищаем кеш
+                      php bin/console cache:clear --env=prod
+
+                      # Запускаем миграции
+                      php bin/console doctrine:migrations:migrate --no-interaction
+
+                      # Прогреваем кеш
+                      php bin/console cache:warmup --env=prod
+
+                      # Устанавливаем права
+                      # Включить когда появятся
+                      # sudo /var/wwwrep/deploy-permissions.sh
+
+                      # Перезагружаем сервисы
+                      # Пока не нужно
+                      # sudo systemctl reload php8.4-fpm
+                      # sudo systemctl reload nginx
+
+
+
+            - name: Notify on failure
+              if: failure()
+              uses: appleboy/telegram-action@master
+              with:
+                  to: ${{ secrets.TELEGRAM_NOTIFY_TO }}
+                  token: ${{ secrets.TELEGRAM_NOTIFY_TOKEN }}
+                  message: |
+                      🚨 Деплой завершился с ошибкой!
+                      Repository: ${{ github.repository }}
+                      Branch: ${{ github.ref_name }}
+                      Commit: ${{ github.sha }}
+                      Author: ${{ github.actor }}
+
+                      Проверьте логи: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+            - name: Notify on success
+              if: success()
+              uses: appleboy/telegram-action@master
+              with:
+                  to: ${{ secrets.TELEGRAM_NOTIFY_TO }}
+                  token: ${{ secrets.TELEGRAM_NOTIFY_TOKEN }}
+                  message: |
+                      ✅ Деплой успешно завершен!
+                      Repository: ${{ github.repository }}
+                      Branch: ${{ github.ref_name }}
+                      Commit: ${{ github.sha }}
+                      Author: ${{ github.actor }}
