@@ -36,8 +36,8 @@ class FoodDoctrineRepository extends ServiceEntityRepository implements FoodRepo
     {
         return $this
             ->createQueryBuilder('f')
-            ->where('LOWER(f.name.value) = LOWER(:name)')
-            ->setParameter('name', $name->value())
+            ->where('LOWER(f.name.value) LIKE LOWER(:name)')
+            ->setParameter('name', $name->value() . '%')
             ->getQuery()
             ->getOneOrNullResult();
     }

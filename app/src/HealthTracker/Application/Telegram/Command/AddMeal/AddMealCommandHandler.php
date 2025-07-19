@@ -10,7 +10,6 @@ use App\HealthTracker\Application\Gateway\FoodInfo\FoodInfoGatewayResponse;
 use App\HealthTracker\Application\Parser\MealParser\MealParserInterface;
 use App\HealthTracker\Application\Parser\MealParser\MealParserRequest;
 use App\HealthTracker\Domain\Entity\Food;
-use App\HealthTracker\Domain\Exception\FoodAlreadyExistsException;
 use App\HealthTracker\Domain\Exception\FoodNotFoundException;
 use App\HealthTracker\Domain\Exception\UserInfoNotFilledException;
 use App\HealthTracker\Domain\Factory\FoodFactoryInterface;
@@ -89,20 +88,19 @@ final readonly class AddMealCommandHandler implements CommandHandlerInterface
     private function createNewFood(FoodInfoGatewayResponse $response): Food
     {
         $food = $this->foodRepository->findByExternalId(new ExternalId($response->externalId));
-        if ($food !== null) {
-            throw new FoodAlreadyExistsException('Продукт с таким id уже существует');
+
+        if ($food === null) {
+            $food = $this->foodFactory->create(
+                externalId: $response->externalId,
+                name: $response->externalName,
+                calories: $response->calories,
+                proteins: $response->proteins,
+                fats: $response->fats,
+                carbohydrates: $response->carbohydrates,
+            );
+
+            $this->foodRepository->save($food);
         }
-
-        $food = $this->foodFactory->create(
-            externalId: $response->externalId,
-            name: $response->externalName,
-            calories: $response->calories,
-            proteins: $response->proteins,
-            fats: $response->fats,
-            carbohydrates: $response->carbohydrates,
-        );
-
-        $this->foodRepository->save($food);
 
         return $food;
     }
