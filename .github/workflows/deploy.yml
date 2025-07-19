@@ -2,7 +2,7 @@ name: Deploy to Production
 
 on:
     push:
-        branches: [ main, master ]
+        branches: [ main, master, deploy-test ]
 jobs:
     deploy:
         runs-on: ubuntu-latest
@@ -72,8 +72,7 @@ jobs:
                       --exclude='.git' \
                       --exclude='.github' \
                       --exclude='tests' \
-                      --filter="protect var/"
-                      --exclude='var/' \
+                      --exclude='var' \
                       ./app/ ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/var/wwwrep/ht/
 
             - name: Notify Rsync done
