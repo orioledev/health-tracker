@@ -1,0 +1,3 @@
+boshurik_telegram_bot:
+    api:
+        token: "%telegram_bot_token%"

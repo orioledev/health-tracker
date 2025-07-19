@@ -1,0 +1,15 @@
+Справочная информация
+
+{% for command in commands %}
+<strong>{{ command.name }}</strong>
+
+{{ command.description }}
+
+{% if command.examples %}
+Примеры использования:
+{% for example in command.examples %}
+    - {{ example }}
+{% endfor %}
+
+{% endif %}
+{% endfor %}

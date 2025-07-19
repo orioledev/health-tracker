@@ -52,8 +52,11 @@ jobs:
               run: |
                   cat > ./app/.env.local << 'EOF'
                   APP_ENV=prod
+                  APP_SECRET=${{ secrets.APP_SECRET }}
+                  APP_BASE_URL=${{ secrets.HOST }}
                   DATABASE_URL="postgresql://${{ secrets.PG_USER }}:${{ secrets.PG_PASS }}@${{ secrets.PG_HOST }}:${{ secrets.PG_PORT }}/${{ secrets.PG_DATABASE }}?serverVersion=17&charset=utf8"
-                  TG_TOKEN=${{ secrets.TG_TOKEN }}
+                  TELEGRAM_BOT_TOKEN=${{ secrets.TG_TOKEN }}
+                  TELEGRAM_ROUTE_SECRET=${{ secrets.TG_ROUTE_SECRET }}
                   EOF
 
             - name: Setup SSH key
@@ -105,7 +108,7 @@ jobs:
 
                       # Устанавливаем права
                       # Включить когда появятся
-                      # sudo /var/wwwrep/deploy-permissions.sh
+                      sudo /var/wwwrep/deploy-permissions.sh
 
                       # Перезагружаем сервисы
                       # Пока не нужно
