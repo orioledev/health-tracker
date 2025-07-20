@@ -6,6 +6,10 @@
 parameters:
     telegram_bot_token: '%env(TELEGRAM_BOT_TOKEN)%'
     telegram_route_secret: '%env(TELEGRAM_ROUTE_SECRET)%'
+    app.version: '0.1.0'
+
+#imports: # не работает так =(
+#    - { resource: services_health.yaml }
 
 services:
     # default configuration for services in *this* file
@@ -40,3 +44,34 @@ services:
         App\Shared\Application\Query\QueryHandlerInterface:
             tags:
                 - { name: messenger.message_handler, bus: query.bus }
+
+
+    # Health Check Checkers автоконфигурация
+#    App\Shared\Infrastructure\HealthCheck\:
+#        resource: '../src/Shared/Infrastructure/HealthCheck/*'
+#        tags: ['health_check.checker']
+    App\Shared\Infrastructure\HealthCheck\DatabaseChecker:
+        arguments:
+            $connection: '@doctrine.dbal.default_connection'
+        tags: ['health_check.checker']
+
+    App\Shared\Infrastructure\HealthCheck\CacheChecker:
+        arguments:
+            $cache: '@cache.app'
+        tags: ['health_check.checker']
+
+    App\Shared\Infrastructure\HealthCheck\FilesystemChecker:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+        tags: ['health_check.checker']
+
+    App\Shared\Infrastructure\HealthCheck\SystemResourcesChecker:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+        tags: ['health_check.checker']
+
+    # Health Check Service
+    App\Shared\Application\Service\HealthCheck\HealthCheckService:
+        bind:
+            $checkers: !tagged_iterator 'health_check.checker'
+            $version: '%app.version%'
