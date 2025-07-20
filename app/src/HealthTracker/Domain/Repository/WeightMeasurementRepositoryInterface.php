@@ -11,5 +11,7 @@ interface WeightMeasurementRepositoryInterface
 {
     public function findById(WeightMeasurementId $weightMeasurementId): ?WeightMeasurement;
 
+    public function findPrevWeightMeasurement(WeightMeasurement $weightMeasurement): ?WeightMeasurement;
+
     public function save(WeightMeasurement $weightMeasurement): void;
 }

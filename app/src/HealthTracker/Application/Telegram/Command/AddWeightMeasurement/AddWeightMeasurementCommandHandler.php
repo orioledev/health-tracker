@@ -36,10 +36,18 @@ final readonly class AddWeightMeasurementCommandHandler implements CommandHandle
 
         $this->weightMeasurementRepository->save($weightMeasurement);
 
+        $prevWeightMeasurement = $this->weightMeasurementRepository->findPrevWeightMeasurement($weightMeasurement);
+        $prevWeight = $prevWeightMeasurement
+            ? $prevWeightMeasurement->weight->value()
+            : $user->indicator->initialWeight->value();
+
         return new AddWeightMeasurementCommandResult(
-            currentWeight: $command->weight,
+            currentWeight: $weightMeasurement->weight->value(),
+            currentBmi: $user->indicator->getCurrentBmi(),
+            prevWeight: $prevWeight,
             initialWeight: $user->indicator->initialWeight->value(),
             targetWeight: $user->indicator->targetWeight->value(),
+            weightTargetType: $user->indicator->weightTargetType,
         );
     }
 }

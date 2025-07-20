@@ -25,6 +25,21 @@ class WeightMeasurementDoctrineRepository extends ServiceEntityRepository implem
         return $this->find($weightMeasurementId);
     }
 
+    public function findPrevWeightMeasurement(WeightMeasurement $weightMeasurement): ?WeightMeasurement
+    {
+        return $this->createQueryBuilder('wm')
+            ->where('wm.user = :user')
+            ->andWhere('wm.createdAt < :createdAt')
+            ->andWhere('wm.id != :currentId')
+            ->setParameter('user', $weightMeasurement->user)
+            ->setParameter('createdAt', $weightMeasurement->createdAt)
+            ->setParameter('currentId', $weightMeasurement->id)
+            ->orderBy('wm.createdAt', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
     public function save(WeightMeasurement $weightMeasurement): void
     {
         $entityManager = $this->getEntityManager();
