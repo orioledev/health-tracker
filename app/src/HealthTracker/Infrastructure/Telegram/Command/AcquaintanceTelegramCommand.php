@@ -199,7 +199,7 @@ final class AcquaintanceTelegramCommand extends BaseTelegramCommand implements P
 
         $userData->birthdate = new DateTimeImmutable($message->getText());
 
-        $this->sendTextMessage($api, $chatId, 'Введи свой рост');
+        $this->sendTextMessage($api, $chatId, 'Введи свой рост (см)');
     }
 
     /**
@@ -218,7 +218,7 @@ final class AcquaintanceTelegramCommand extends BaseTelegramCommand implements P
         $height = new Height((int)$message->getText());
         $userData->height = $height->value();
 
-        $this->sendTextMessage($api, $chatId, 'Введи свой текущий вес');
+        $this->sendTextMessage($api, $chatId, 'Введи свой текущий вес (кг)');
     }
 
     /**
@@ -237,7 +237,7 @@ final class AcquaintanceTelegramCommand extends BaseTelegramCommand implements P
         $weight = new Weight($message->getText());
         $userData->initialWeight = $weight->value();
 
-        $this->sendTextMessage($api, $chatId, 'Введи вес, к которому ты стремишься');
+        $this->sendTextMessage($api, $chatId, 'Введи вес, к которому ты стремишься (кг)');
     }
 
     /**
