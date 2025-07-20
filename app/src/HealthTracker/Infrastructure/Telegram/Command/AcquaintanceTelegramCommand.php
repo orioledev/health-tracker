@@ -13,6 +13,7 @@ use App\HealthTracker\Domain\Enum\WeightTargetType;
 use App\HealthTracker\Domain\Exception\UserAlreadyExistsException;
 use App\HealthTracker\Domain\ValueObject\Shared\Weight;
 use App\HealthTracker\Domain\ValueObject\UserIndicator\Height;
+use App\HealthTracker\Infrastructure\Exception\InvalidParameterException;
 use App\HealthTracker\Infrastructure\Telegram\DTO\AcquaintanceUserData;
 use App\HealthTracker\Infrastructure\Telegram\Handler\AcquaintanceHandler;
 use App\HealthTracker\Infrastructure\Telegram\Message\MessagePayload;
@@ -30,6 +31,7 @@ use TelegramBot\Api\Types\Message;
 use TelegramBot\Api\Types\Update;
 use Throwable;
 use Twig\Environment;
+use ValueError;
 
 final class AcquaintanceTelegramCommand extends BaseTelegramCommand implements PublicCommandInterface
 {
@@ -114,6 +116,11 @@ final class AcquaintanceTelegramCommand extends BaseTelegramCommand implements P
                 $this->finalStep($api, $update->getMessage(), $chatId, $userData);
                 $this->acquaintanceHandler->clearData($chatId);
             }
+        } catch (InvalidParameterException $e) {
+            $prev = $e->getPrevious() ?? $e;
+            $errorMessage = $prev->getMessage() . '. Попробуй ввести еще раз';
+            $this->sendErrorMessage($api, $chatId, $errorMessage);
+            return;
         } catch (Throwable $e) {
             $prev = $e->getPrevious() ?? $e;
             $this->sendErrorMessage($api, $chatId, $prev->getMessage());
@@ -177,10 +184,14 @@ final class AcquaintanceTelegramCommand extends BaseTelegramCommand implements P
     {
         $this->logger->debug('step1, gender: ' . $message->getText());
 
-        $gender = Gender::from((int)$message->getText());
-        $userData->gender = $gender;
+        try {
+            $gender = Gender::from((int)$message->getText());
+            $userData->gender = $gender;
+        } catch (ValueError) {
+            throw new InvalidParameterException('Выбран некорректный пол');
+        }
 
-        $this->sendTextMessage($api, $chatId, 'Введи свою дату рождения');
+        $this->sendTextMessage($api, $chatId, 'Введи свою дату рождения (в формате дд.мм.гггг)');
     }
 
     /**
@@ -191,13 +202,17 @@ final class AcquaintanceTelegramCommand extends BaseTelegramCommand implements P
      * @return void
      * @throws Exception
      * @throws InvalidArgumentException
-     * @throws DateMalformedStringException
      */
     protected function step2(BotApi $api, Message $message, string $chatId, AcquaintanceUserData $userData): void
     {
         $this->logger->debug('step2, birthdate: ' . $message->getText());
 
-        $userData->birthdate = new DateTimeImmutable($message->getText());
+        try {
+            $birthdate = new DateTimeImmutable($message->getText());
+            $userData->birthdate = $birthdate;
+        } catch (DateMalformedStringException) {
+            throw new InvalidParameterException('Введена некорректная дата рождения (требуемый формат - дд.мм.гггг)');
+        }
 
         $this->sendTextMessage($api, $chatId, 'Введи свой рост (см)');
     }
@@ -215,8 +230,13 @@ final class AcquaintanceTelegramCommand extends BaseTelegramCommand implements P
     {
         $this->logger->debug('step3, height: ' . $message->getText());
 
-        $height = new Height((int)$message->getText());
-        $userData->height = $height->value();
+        try {
+            $height = new Height((int)$message->getText());
+            $userData->height = $height->value();
+        } catch (\InvalidArgumentException $e) {
+            $errorMessage = sprintf('Введен некорректный рост (%s)', $e->getMessage());
+            throw new InvalidParameterException($errorMessage);
+        }
 
         $this->sendTextMessage($api, $chatId, 'Введи свой текущий вес (кг)');
     }
@@ -234,8 +254,13 @@ final class AcquaintanceTelegramCommand extends BaseTelegramCommand implements P
     {
         $this->logger->debug('step4, initialWeight: ' . $message->getText());
 
-        $weight = new Weight($message->getText());
-        $userData->initialWeight = $weight->value();
+        try {
+            $weight = new Weight($message->getText());
+            $userData->initialWeight = $weight->value();
+        } catch (\InvalidArgumentException $e) {
+            $errorMessage = sprintf('Введен некорректный текущий вес (%s)', $e->getMessage());
+            throw new InvalidParameterException($errorMessage);
+        }
 
         $this->sendTextMessage($api, $chatId, 'Введи вес, к которому ты стремишься (кг)');
     }
@@ -253,8 +278,13 @@ final class AcquaintanceTelegramCommand extends BaseTelegramCommand implements P
     {
         $this->logger->debug('step5, targetWeight: ' . $message->getText());
 
-        $weight = new Weight($message->getText());
-        $userData->targetWeight = $weight->value();
+        try {
+            $weight = new Weight($message->getText());
+            $userData->targetWeight = $weight->value();
+        } catch (\InvalidArgumentException $e) {
+            $errorMessage = sprintf('Введен некорректный вес, к которому ты стремишься (%s)', $e->getMessage());
+            throw new InvalidParameterException($errorMessage);
+        }
 
         $this->sendTextMessage($api, $chatId, 'Выбери свою цель');
     }
@@ -272,8 +302,12 @@ final class AcquaintanceTelegramCommand extends BaseTelegramCommand implements P
     {
         $this->logger->debug('step6, weightTargetType: ' . $message->getText());
 
-        $weightTargetType = WeightTargetType::from((int)$message->getText());
-        $userData->weightTargetType = $weightTargetType;
+        try {
+            $weightTargetType = WeightTargetType::from((int)$message->getText());
+            $userData->weightTargetType = $weightTargetType;
+        } catch (ValueError) {
+            throw new InvalidParameterException('Выбрана некорректная цель');
+        }
 
         $this->sendTextMessage($api, $chatId, 'Выбери свой уровень физической активности');
     }
@@ -289,8 +323,12 @@ final class AcquaintanceTelegramCommand extends BaseTelegramCommand implements P
     {
         $this->logger->debug('step7, activityLevel: ' . $message->getText());
 
-        $activityLevel = ActivityLevel::from((int)$message->getText());
-        $userData->activityLevel = $activityLevel;
+        try {
+            $activityLevel = ActivityLevel::from((int)$message->getText());
+            $userData->activityLevel = $activityLevel;
+        } catch (ValueError) {
+            throw new InvalidParameterException('Выбран некорректный уровень физической активности');
+        }
     }
 
     /**
