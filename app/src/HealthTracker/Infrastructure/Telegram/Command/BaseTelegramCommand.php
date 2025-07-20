@@ -61,7 +61,7 @@ abstract class BaseTelegramCommand extends AbstractCommand implements PublicComm
             templateContext: $context
         );
 
-        $this->sendMessage($api, $payload);
+        $this->sendMessageWithTemplate($api, $payload);
     }
 
     /**
@@ -80,7 +80,7 @@ abstract class BaseTelegramCommand extends AbstractCommand implements PublicComm
             templateContext: $context
         );
 
-        $this->sendMessage($api, $payload);
+        $this->sendMessageWithTemplate($api, $payload);
     }
 
     /**
@@ -97,7 +97,23 @@ abstract class BaseTelegramCommand extends AbstractCommand implements PublicComm
             template: $this->getNeedAcquaintanceMessageTemplate(),
         );
 
-        $this->sendMessage($api, $payload);
+        $this->sendMessageWithTemplate($api, $payload);
+    }
+
+    /**
+     * @param BotApi $api
+     * @param string $chatId
+     * @param string $text
+     * @return void
+     * @throws Exception
+     * @throws InvalidArgumentException
+     */
+    protected function sendTextMessage(BotApi $api, string $chatId, string $text): void
+    {
+        $api->sendMessage(
+            chatId: $chatId,
+            text: $text,
+        );
     }
 
     /**
@@ -107,7 +123,7 @@ abstract class BaseTelegramCommand extends AbstractCommand implements PublicComm
      * @throws Exception
      * @throws InvalidArgumentException
      */
-    protected function sendMessage(BotApi $api, MessagePayload $payload): void
+    protected function sendMessageWithTemplate(BotApi $api, MessagePayload $payload): void
     {
         try {
             $text = $this->twig->render($payload->template, $payload->templateContext);
