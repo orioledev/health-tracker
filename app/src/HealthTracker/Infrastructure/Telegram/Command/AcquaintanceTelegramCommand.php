@@ -16,7 +16,6 @@ use App\HealthTracker\Domain\ValueObject\UserIndicator\Height;
 use App\HealthTracker\Infrastructure\Exception\InvalidParameterException;
 use App\HealthTracker\Infrastructure\Telegram\DTO\AcquaintanceUserData;
 use App\HealthTracker\Infrastructure\Telegram\Handler\AcquaintanceHandler;
-use App\HealthTracker\Infrastructure\Telegram\Message\MessagePayload;
 use App\Shared\Application\Bus\CommandBusInterface;
 use App\Shared\Application\Bus\QueryBusInterface;
 use BadMethodCallException;
@@ -158,15 +157,14 @@ final class AcquaintanceTelegramCommand extends BaseTelegramCommand implements P
     {
         $this->logger->debug('step0');
 
-        $payload = new MessagePayload(
-            chatId: $chatId,
-            template: $this->getWelcomeTemplate(),
-            templateContext: [
+        $this->sendMessageWithTemplate(
+            $api,
+            $chatId,
+            $this->getWelcomeTemplate(),
+            [
                 'userData' => $userData->toArray(),
-            ],
+            ]
         );
-
-        $this->sendMessageWithTemplate($api, $payload);
 
         $this->sendTextMessage($api, $chatId, 'Выбери свой пол');
     }
@@ -379,12 +377,7 @@ final class AcquaintanceTelegramCommand extends BaseTelegramCommand implements P
 
         $this->acquaintanceHandler->clearData($chatId);
 
-        $payload = new MessagePayload(
-            chatId: $chatId,
-            template: $this->getCancelTemplate(),
-        );
-
-        $this->sendMessageWithTemplate($api, $payload);
+        $this->sendMessageWithTemplate($api, $chatId, $this->getCancelTemplate());
     }
 
     protected function isCancelStep(Update $update): bool
