@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\HealthTracker\Application\Telegram\Command\CreateUser;
 
+use App\HealthTracker\Application\DTO\UserData;
 use App\HealthTracker\Domain\Calculator\UserDailyNorm\MacronutrientsDailyNormCalculatorArgs;
 use App\HealthTracker\Domain\Calculator\UserDailyNorm\MacronutrientsDailyNormCalculatorInterface;
 use App\HealthTracker\Domain\Entity\User;
@@ -52,6 +53,7 @@ final readonly class CreateUserCommandHandler implements CommandHandlerInterface
         $this->userRepository->save($user);
 
         return new CreateUserCommandResult(
+            userData: UserData::fromEntity($user),
             macronutrients: $userDailyNorm->macronutrients,
             steps: $user->dailyNorm->steps->value(),
         );

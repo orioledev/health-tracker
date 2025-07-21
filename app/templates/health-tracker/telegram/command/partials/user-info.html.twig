@@ -1,0 +1,13 @@
+1. Дата рождения: {{ userData.birthdate|date("d.m.Y") }}
+
+2. Пол: {{ userData.gender.getLabel() }}
+
+3. Рост: {{ userData.height }} см.
+
+4. Текущий вес: {{ userData.initialWeight }} кг.
+
+5. Вес, к которому ты стремишься: {{ userData.targetWeight }} кг.
+
+6. Цель: {{ userData.weightTargetType.getLabel() }}
+
+7. Уровень физической активности: {{ userData.activityLevel.getLabel() }}

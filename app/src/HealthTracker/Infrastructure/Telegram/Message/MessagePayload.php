@@ -13,8 +13,7 @@ final readonly class MessagePayload
 {
     public function __construct(
         public int|string|float $chatId,
-        public ?string $template = null,
-        public array $templateContext = [],
+        public string $text,
         public ?string $parseMode = 'html',
         public bool $disablePreview = true,
         public ?int $replyToMessageId = null,
