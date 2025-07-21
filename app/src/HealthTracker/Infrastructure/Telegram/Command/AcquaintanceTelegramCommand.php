@@ -16,17 +16,17 @@ use App\HealthTracker\Domain\ValueObject\UserIndicator\Height;
 use App\HealthTracker\Infrastructure\Exception\InvalidParameterException;
 use App\HealthTracker\Infrastructure\Telegram\DTO\AcquaintanceUserData;
 use App\HealthTracker\Infrastructure\Telegram\Handler\AcquaintanceHandler;
+use App\HealthTracker\Infrastructure\Telegram\Message\MessagePayload;
 use App\Shared\Application\Bus\CommandBusInterface;
 use App\Shared\Application\Bus\QueryBusInterface;
 use BadMethodCallException;
 use BoShurik\TelegramBotBundle\Telegram\Command\PublicCommandInterface;
 use DateMalformedStringException;
 use DateTimeImmutable;
-use Psr\Log\LoggerInterface;
 use TelegramBot\Api\BotApi;
 use TelegramBot\Api\Exception;
 use TelegramBot\Api\InvalidArgumentException;
-use TelegramBot\Api\Types\Message;
+use TelegramBot\Api\Types\Inline\InlineKeyboardMarkup;
 use TelegramBot\Api\Types\Update;
 use Throwable;
 use Twig\Environment;
@@ -38,7 +38,6 @@ final class AcquaintanceTelegramCommand extends BaseTelegramCommand implements P
 
     public function __construct(
         Environment $twig,
-        private readonly LoggerInterface $logger,
         private readonly AcquaintanceHandler $acquaintanceHandler,
         private readonly QueryBusInterface $queryBus,
         private readonly CommandBusInterface $commandBus,
@@ -71,8 +70,14 @@ final class AcquaintanceTelegramCommand extends BaseTelegramCommand implements P
      */
     public function execute(BotApi $api, Update $update): void
     {
-        $chatId = (string)$update->getMessage()?->getChat()->getId();
-        $telegramUser = $update->getMessage()?->getFrom();
+        if ($update->getCallbackQuery()) {
+            $message = $update->getCallbackQuery()->getMessage();
+        } else {
+            $message = $update->getMessage();
+        }
+
+        $chatId = (string)$message?->getChat()->getId();
+        $telegramUser = $message?->getFrom();
 
         try {
             $isUserExists = $this->queryBus->ask(
@@ -86,7 +91,7 @@ final class AcquaintanceTelegramCommand extends BaseTelegramCommand implements P
             }
 
             if ($this->isCancelStep($update)) {
-                $this->cancelStep($api, $update->getMessage(), $chatId);
+                $this->cancelStep($api, $update, $chatId);
                 return;
             }
 
@@ -106,13 +111,13 @@ final class AcquaintanceTelegramCommand extends BaseTelegramCommand implements P
                 throw new BadMethodCallException('Такого шага не существует');
             }
 
-            $this->$method($api, $update->getMessage(), $chatId, $userData);
+            $this->$method($api, $update, $chatId, $userData);
 
             if (method_exists($this, $nextMethod)) {
                 $this->acquaintanceHandler->setUserData($chatId, $userData);
                 $this->acquaintanceHandler->setCurrentStep($chatId, $step + 1);
             } else {
-                $this->finalStep($api, $update->getMessage(), $chatId, $userData);
+                $this->finalStep($api, $update, $chatId, $userData);
                 $this->acquaintanceHandler->clearData($chatId);
             }
         } catch (InvalidParameterException $e) {
@@ -137,26 +142,32 @@ final class AcquaintanceTelegramCommand extends BaseTelegramCommand implements P
         if (parent::isApplicable($update)) {
             return true;
         }
-        if (!$update->getMessage()) {
+
+        if ($update->getCallbackQuery()) {
+            $chatId = $update->getCallbackQuery()->getMessage()?->getChat()->getId();
+
+        } else {
+            $chatId = $update->getMessage()?->getChat()->getId();
+        }
+
+        if (!$chatId) {
             return false;
         }
 
-        return $this->acquaintanceHandler->hasData((string)$update->getMessage()->getChat()->getId());
+        return $this->acquaintanceHandler->hasData((string)$chatId);
     }
 
     /**
      * @param BotApi $api
-     * @param Message $message
+     * @param Update $update
      * @param string $chatId
      * @param AcquaintanceUserData $userData
      * @return void
      * @throws Exception
      * @throws InvalidArgumentException
      */
-    protected function step0(BotApi $api, Message $message, string $chatId, AcquaintanceUserData $userData): void
+    protected function step0(BotApi $api, Update $update, string $chatId, AcquaintanceUserData $userData): void
     {
-        $this->logger->debug('step0');
-
         $this->sendMessageWithTemplate(
             $api,
             $chatId,
@@ -166,24 +177,38 @@ final class AcquaintanceTelegramCommand extends BaseTelegramCommand implements P
             ]
         );
 
-        $this->sendTextMessage($api, $chatId, 'Выбери свой пол');
+        // Gender buttons
+        $buttons = [];
+        foreach (Gender::getList() as $value => $label) {
+            $buttons[] = [
+                ['text' => $label, 'callback_data' => 'gender_' . $value]
+            ];
+        }
+
+        $payload = new MessagePayload(
+            chatId: $chatId,
+            text: 'Выбери свой пол',
+            replyMarkup: new InlineKeyboardMarkup($buttons),
+        );
+
+        $this->sendApiMessage($api, $payload);
     }
 
     /**
      * @param BotApi $api
-     * @param Message $message
+     * @param Update $update
      * @param string $chatId
      * @param AcquaintanceUserData $userData
      * @return void
      * @throws Exception
      * @throws InvalidArgumentException
      */
-    protected function step1(BotApi $api, Message $message, string $chatId, AcquaintanceUserData $userData): void
+    protected function step1(BotApi $api, Update $update, string $chatId, AcquaintanceUserData $userData): void
     {
-        $this->logger->debug('step1, gender: ' . $message->getText());
+        $genderEnumValue = $this->getEnumValue($update);
 
         try {
-            $gender = Gender::from((int)$message->getText());
+            $gender = Gender::from((int)$genderEnumValue);
             $userData->gender = $gender;
         } catch (ValueError) {
             throw new InvalidParameterException('Выбран некорректный пол');
@@ -194,22 +219,22 @@ final class AcquaintanceTelegramCommand extends BaseTelegramCommand implements P
 
     /**
      * @param BotApi $api
-     * @param Message $message
+     * @param Update $update
      * @param string $chatId
      * @param AcquaintanceUserData $userData
      * @return void
      * @throws Exception
      * @throws InvalidArgumentException
      */
-    protected function step2(BotApi $api, Message $message, string $chatId, AcquaintanceUserData $userData): void
+    protected function step2(BotApi $api, Update $update, string $chatId, AcquaintanceUserData $userData): void
     {
-        $this->logger->debug('step2, birthdate: ' . $message->getText());
+        $message = $update->getMessage();
 
         try {
             $birthdate = new DateTimeImmutable($message->getText());
             $userData->birthdate = $birthdate;
         } catch (DateMalformedStringException) {
-            throw new InvalidParameterException('Введена некорректная дата рождения (требуемый формат - дд.мм.гггг)');
+            throw new InvalidParameterException('Введена некорректная дата рождения (дд.мм.гггг)');
         }
 
         $this->sendTextMessage($api, $chatId, 'Введи свой рост (см)');
@@ -217,16 +242,16 @@ final class AcquaintanceTelegramCommand extends BaseTelegramCommand implements P
 
     /**
      * @param BotApi $api
-     * @param Message $message
+     * @param Update $update
      * @param string $chatId
      * @param AcquaintanceUserData $userData
      * @return void
      * @throws Exception
      * @throws InvalidArgumentException
      */
-    protected function step3(BotApi $api, Message $message, string $chatId, AcquaintanceUserData $userData): void
+    protected function step3(BotApi $api, Update $update, string $chatId, AcquaintanceUserData $userData): void
     {
-        $this->logger->debug('step3, height: ' . $message->getText());
+        $message = $update->getMessage();
 
         try {
             $height = new Height((int)$message->getText());
@@ -241,16 +266,16 @@ final class AcquaintanceTelegramCommand extends BaseTelegramCommand implements P
 
     /**
      * @param BotApi $api
-     * @param Message $message
+     * @param Update $update
      * @param string $chatId
      * @param AcquaintanceUserData $userData
      * @return void
      * @throws Exception
      * @throws InvalidArgumentException
      */
-    protected function step4(BotApi $api, Message $message, string $chatId, AcquaintanceUserData $userData): void
+    protected function step4(BotApi $api, Update $update, string $chatId, AcquaintanceUserData $userData): void
     {
-        $this->logger->debug('step4, initialWeight: ' . $message->getText());
+        $message = $update->getMessage();
 
         try {
             $weight = new Weight($message->getText());
@@ -265,16 +290,16 @@ final class AcquaintanceTelegramCommand extends BaseTelegramCommand implements P
 
     /**
      * @param BotApi $api
-     * @param Message $message
+     * @param Update $update
      * @param string $chatId
      * @param AcquaintanceUserData $userData
      * @return void
      * @throws Exception
      * @throws InvalidArgumentException
      */
-    protected function step5(BotApi $api, Message $message, string $chatId, AcquaintanceUserData $userData): void
+    protected function step5(BotApi $api, Update $update, string $chatId, AcquaintanceUserData $userData): void
     {
-        $this->logger->debug('step5, targetWeight: ' . $message->getText());
+        $message = $update->getMessage();
 
         try {
             $weight = new Weight($message->getText());
@@ -284,45 +309,73 @@ final class AcquaintanceTelegramCommand extends BaseTelegramCommand implements P
             throw new InvalidParameterException($errorMessage);
         }
 
-        $this->sendTextMessage($api, $chatId, 'Выбери свою цель');
+        // Weight target type buttons
+        $buttons = [];
+        foreach (WeightTargetType::getList() as $value => $label) {
+            $buttons[] = [
+                ['text' => $label, 'callback_data' => 'weightTargetType_' . $value]
+            ];
+        }
+
+        $payload = new MessagePayload(
+            chatId: $chatId,
+            text: 'Выбери свою цель',
+            replyMarkup: new InlineKeyboardMarkup($buttons),
+        );
+
+        $this->sendApiMessage($api, $payload);
     }
 
     /**
      * @param BotApi $api
-     * @param Message $message
+     * @param Update $update
      * @param string $chatId
      * @param AcquaintanceUserData $userData
      * @return void
      * @throws Exception
      * @throws InvalidArgumentException
      */
-    protected function step6(BotApi $api, Message $message, string $chatId, AcquaintanceUserData $userData): void
+    protected function step6(BotApi $api, Update $update, string $chatId, AcquaintanceUserData $userData): void
     {
-        $this->logger->debug('step6, weightTargetType: ' . $message->getText());
+        $weightTargetTypeEnumValue = $this->getEnumValue($update);
 
         try {
-            $weightTargetType = WeightTargetType::from((int)$message->getText());
+            $weightTargetType = WeightTargetType::from((int)$weightTargetTypeEnumValue);
             $userData->weightTargetType = $weightTargetType;
         } catch (ValueError) {
             throw new InvalidParameterException('Выбрана некорректная цель');
         }
 
-        $this->sendTextMessage($api, $chatId, 'Выбери свой уровень физической активности');
+        // Activity level buttons
+        $buttons = [];
+        foreach (ActivityLevel::getList() as $value => $label) {
+            $buttons[] = [
+                ['text' => $label, 'callback_data' => 'activityLevel_' . $value]
+            ];
+        }
+
+        $payload = new MessagePayload(
+            chatId: $chatId,
+            text: 'Выбери свой уровень физической активности',
+            replyMarkup: new InlineKeyboardMarkup($buttons),
+        );
+
+        $this->sendApiMessage($api, $payload);
     }
 
     /**
      * @param BotApi $api
-     * @param Message $message
+     * @param Update $update
      * @param string $chatId
      * @param AcquaintanceUserData $userData
      * @return void
      */
-    protected function step7(BotApi $api, Message $message, string $chatId, AcquaintanceUserData $userData): void
+    protected function step7(BotApi $api, Update $update, string $chatId, AcquaintanceUserData $userData): void
     {
-        $this->logger->debug('step7, activityLevel: ' . $message->getText());
+        $activityLevelEnumValue = $this->getEnumValue($update);
 
         try {
-            $activityLevel = ActivityLevel::from((int)$message->getText());
+            $activityLevel = ActivityLevel::from((int)$activityLevelEnumValue);
             $userData->activityLevel = $activityLevel;
         } catch (ValueError) {
             throw new InvalidParameterException('Выбран некорректный уровень физической активности');
@@ -331,17 +384,15 @@ final class AcquaintanceTelegramCommand extends BaseTelegramCommand implements P
 
     /**
      * @param BotApi $api
-     * @param Message $message
+     * @param Update $update
      * @param string $chatId
      * @param AcquaintanceUserData $userData
      * @return void
      * @throws Exception
      * @throws InvalidArgumentException
      */
-    protected function finalStep(BotApi $api, Message $message, string $chatId, AcquaintanceUserData $userData): void
+    protected function finalStep(BotApi $api, Update $update, string $chatId, AcquaintanceUserData $userData): void
     {
-        $this->logger->debug('finalStep');
-
         $command = new CreateUserCommand(
             telegramUserId: $userData->telegramUserId,
             telegramUsername: $userData->telegramUsername,
@@ -364,17 +415,15 @@ final class AcquaintanceTelegramCommand extends BaseTelegramCommand implements P
 
     /**
      * @param BotApi $api
-     * @param Message $message
+     * @param Update $update
      * @param string $chatId
      * @return void
      * @throws Exception
      * @throws InvalidArgumentException
      * @throws \Psr\Cache\InvalidArgumentException
      */
-    protected function cancelStep(BotApi $api, Message $message, string $chatId): void
+    protected function cancelStep(BotApi $api, Update $update, string $chatId): void
     {
-        $this->logger->debug('cancelStep');
-
         $this->acquaintanceHandler->clearData($chatId);
 
         $this->sendMessageWithTemplate($api, $chatId, $this->getCancelTemplate());
@@ -390,6 +439,21 @@ final class AcquaintanceTelegramCommand extends BaseTelegramCommand implements P
         preg_match(self::REGEXP, $text, $matches);
 
         return mb_strtolower($matches[3]) === 'cancel';
+    }
+
+    protected function getEnumValue(Update $update): ?string
+    {
+        $regexp = '/[a-zA-Z_]+_(\d+)/';
+
+        if ($update->getMessage() && preg_match($regexp, $update->getMessage()->getText(), $matches)) {
+            return $matches[1];
+        }
+
+        if ($update->getCallbackQuery() && preg_match($regexp, $update->getCallbackQuery()->getData(), $matches)) {
+            return $matches[1];
+        }
+
+        return null;
     }
 
     protected function getSuccessMessageTemplate(): string
