@@ -4,6 +4,6 @@
 
 {% include 'health-tracker/telegram/command/partials/user-info.html.twig' with {'userData': userData} %}
 
-<strong>Я определил для вас оптимальную суточную норму калорий, белков, жиров и углеводов (КБЖУ), а также рекомендованное число шагов в день:</strong>
+<strong>Я определил для тебя оптимальную суточную норму калорий, белков, жиров и углеводов (КБЖУ), а также рекомендованное число шагов в день:</strong>
 
 {% include 'health-tracker/telegram/command/partials/daily-norm.html.twig' with {'macronutrients': macronutrients, 'steps': steps} %}
