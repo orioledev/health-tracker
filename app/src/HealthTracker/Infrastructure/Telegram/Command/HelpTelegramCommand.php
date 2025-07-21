@@ -15,7 +15,7 @@ use Twig\Environment;
 
 final class HelpTelegramCommand extends BaseTelegramCommand implements PublicCommandInterface
 {
-    public const string NAME = 'help';
+    public const string NAME = '/help';
 
     public function __construct(
         Environment                      $twig,
@@ -77,18 +77,9 @@ final class HelpTelegramCommand extends BaseTelegramCommand implements PublicCom
                 continue;
             }
 
-            $name = method_exists($command, 'getAliases')
-                ? current($command->getAliases())
-                : $command->getName();
-
-            $examples = method_exists($command, 'getExamples')
-                ? $command->getExamples()
-                : [];
-
             $context['commands'][] = [
-                'name' => $name,
+                'name' => $command->getName(),
                 'description' => $command->getDescription(),
-                'examples' => $examples,
             ];
         }
 
