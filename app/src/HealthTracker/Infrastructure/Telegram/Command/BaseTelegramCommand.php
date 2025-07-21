@@ -10,11 +10,19 @@ use BoShurik\TelegramBotBundle\Telegram\Command\PublicCommandInterface;
 use TelegramBot\Api\BotApi;
 use TelegramBot\Api\Exception;
 use TelegramBot\Api\InvalidArgumentException;
+use TelegramBot\Api\Types\Message;
+use TelegramBot\Api\Types\Update;
+use TelegramBot\Api\Types\User;
 use Throwable;
 use Twig\Environment;
 
 abstract class BaseTelegramCommand extends AbstractCommand implements PublicCommandInterface
 {
+    public const string COMMAND_NAME_REGEXP = '/^([^@]+)$/';
+
+    private ?Message $_telegramMessage = null;
+    private ?User $_telegramUser = null;
+
     public function __construct(
         protected readonly Environment $twig,
     ) {}
@@ -30,6 +38,48 @@ abstract class BaseTelegramCommand extends AbstractCommand implements PublicComm
     }
 
     abstract protected function getSuccessMessageTemplate(): string;
+
+    protected function matchCommandName(string $text, string $name): bool
+    {
+        preg_match(self::COMMAND_NAME_REGEXP, $text, $matches);
+
+        return !empty($matches) && $matches[1] == $name;
+    }
+
+    protected function getCommandParameters(Update $update): ?string
+    {
+        return null;
+    }
+
+    protected function getTelegramMessage(Update $update): ?Message
+    {
+        if ($this->_telegramMessage !== null) {
+            return $this->_telegramMessage;
+        }
+
+        if ($update->getCallbackQuery()) {
+            $this->_telegramMessage = $update->getCallbackQuery()->getMessage();
+        } else {
+            $this->_telegramMessage = $update->getMessage();
+        }
+
+        return $this->_telegramMessage;
+    }
+
+    protected function getTelegramUser(Update $update): ?User
+    {
+        if ($this->_telegramUser !== null) {
+            return $this->_telegramUser;
+        }
+
+        if ($update->getCallbackQuery()) {
+            $this->_telegramUser = $update->getCallbackQuery()->getFrom();
+        } else {
+            $this->_telegramUser = $update->getMessage()?->getFrom();
+        }
+
+        return $this->_telegramUser;
+    }
 
     protected function getErrorMessageTemplate(): string
     {
