@@ -40,7 +40,12 @@ final class AddWalkTelegramCommand extends BaseMultipleStepTelegramCommand
     {
         return self::NAME;
     }
-
+    public function getAliases(): array
+    {
+        return [
+            '/addwalk',
+        ];
+    }
     public function getDescription(): string
     {
         return 'Добавление прогулки (шагов)';
