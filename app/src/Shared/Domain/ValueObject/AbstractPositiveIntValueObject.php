@@ -17,7 +17,7 @@ abstract readonly class AbstractPositiveIntValueObject extends AbstractValueObje
      */
     public function __construct(string|int $value)
     {
-        $this->value = $this->normalizeDecimal($value);
+        $this->value = $this->normalizeInt($value);
     }
 
     final public function value(): int
@@ -54,7 +54,7 @@ abstract readonly class AbstractPositiveIntValueObject extends AbstractValueObje
         }
     }
 
-    protected function normalizeDecimal(string|int $value): int
+    protected function normalizeInt(string|int $value): int
     {
         if (is_string($value)) {
             $value = str_replace([',',' '], '', trim($value));
