@@ -39,6 +39,12 @@ final class AddWeightMeasurementTelegramCommand extends BaseMultipleStepTelegram
     {
         return self::NAME;
     }
+    public function getAliases(): array
+    {
+        return [
+            '/addweight',
+        ];
+    }
 
     public function getDescription(): string
     {

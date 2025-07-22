@@ -7,7 +7,6 @@ namespace App\HealthTracker\Infrastructure\Telegram\Command;
 use App\HealthTracker\Application\Telegram\Command\AddWalk\AddWalkCommand;
 use App\HealthTracker\Application\Telegram\Command\AddWalk\AddWalkCommandResult;
 use App\HealthTracker\Application\Telegram\Query\CheckUserExistenceByTelegramUserId\CheckUserExistenceByTelegramUserIdQuery;
-use App\HealthTracker\Domain\ValueObject\Shared\Steps;
 use App\HealthTracker\Domain\ValueObject\Shared\StepsAmount;
 use App\HealthTracker\Infrastructure\Exception\InvalidParameterException;
 use App\HealthTracker\Infrastructure\Exception\NeedAcquaintanceException;
@@ -112,8 +111,6 @@ final class AddWalkTelegramCommand extends BaseMultipleStepTelegramCommand
 
         $telegramUser = $this->getTelegramUser($update);
 
-
-
         /** @var AddWalkData $data */
         $command = new AddWalkCommand(
             telegramUserId: $telegramUser->getId(),
@@ -157,10 +154,10 @@ final class AddWalkTelegramCommand extends BaseMultipleStepTelegramCommand
         $message = $update->getMessage();
 
         try {
-            $steps = new Steps($message->getText());
+            $steps = new StepsAmount($message->getText());
             $data->steps = $steps->value();
         } catch (\InvalidArgumentException $e) {
-            $errorMessage = sprintf('Введен неверный формат шагов (%s)', $e->getMessage());
+            $errorMessage = sprintf('Введен неверное количество шагов (%s)', $e->getMessage());
             throw new InvalidParameterException($errorMessage);
         }
     }

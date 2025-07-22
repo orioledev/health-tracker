@@ -30,6 +30,19 @@ abstract readonly class AbstractPositiveIntValueObject extends AbstractValueObje
         return $this->value() === $other->value();
     }
 
+    protected function normalizeInt(string|int $value): int
+    {
+        if (is_string($value)) {
+            $value = str_replace([',',' '], '', trim($value));
+            $this->assertValueIsInt($value);
+            $value = (int)$value;
+        }
+
+        $this->assertValueIsPositive($value);
+
+        return $value;
+    }
+
     /**
      * @param int $value
      * @return void
@@ -54,16 +67,5 @@ abstract readonly class AbstractPositiveIntValueObject extends AbstractValueObje
         }
     }
 
-    protected function normalizeInt(string|int $value): int
-    {
-        if (is_string($value)) {
-            $value = str_replace([',',' '], '', trim($value));
-            $this->assertValueIsInt($value);
-            $value = (int)$value;
-        }
 
-        $this->assertValueIsPositive($value);
-
-        return $value;
-    }
 }
