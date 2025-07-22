@@ -8,17 +8,16 @@ use InvalidArgumentException;
 
 abstract readonly class AbstractPositiveIntValueObject extends AbstractValueObject
 {
+    protected const string POSITIVE_INT_PATTERN = '/^[1-9][0-9]*$/';
     protected int $value;
 
     /**
      * @param int $value
      * @throws InvalidArgumentException
      */
-    public function __construct(int $value)
+    public function __construct(string|int $value)
     {
-        $this->assertValueIsPositive($value);
-
-        $this->value = $value;
+        $this->value = $this->normalizeDecimal($value);
     }
 
     final public function value(): int
@@ -41,5 +40,30 @@ abstract readonly class AbstractPositiveIntValueObject extends AbstractValueObje
         if ($value <= 0) {
             throw new InvalidArgumentException("Число $value должно быть больше 0");
         }
+    }
+
+    /**
+     * @param string $value
+     * @return void
+     * @throws InvalidArgumentException
+     */
+    protected function assertValueIsInt(string $value): void
+    {
+        if ($value === '' || !preg_match(static::POSITIVE_INT_PATTERN, $value)) {
+            throw new InvalidArgumentException("Некорректный формат числа: $value");
+        }
+    }
+
+    protected function normalizeDecimal(string|int $value): int
+    {
+        if (is_string($value)) {
+            $value = str_replace([',',' '], '', trim($value));
+            $this->assertValueIsInt($value);
+            $value = (int)$value;
+        }
+
+        $this->assertValueIsPositive($value);
+
+        return $value;
     }
 }

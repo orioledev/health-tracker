@@ -1,0 +1,11 @@
+{% set diffWithTarget = dailySteps - currentDaySteps %}
+{% set diffWithPrevDay = currentDaySteps - prevDaySteps %}
+
+    Ты прошел <strong>{{ currentSteps }}</strong> шагов и потратил за прогулку <strong>{{ currentCalories }}</strong> ккал.
+{% if (diffWithTarget <= 0) %}
+    Отлично! Дневная норма по шагам ({{ dailySteps }}) выполнена!
+{% else %}
+    До дневной нормы осталось пройти еще <strong>{{ diffWithTarget }}</strong> шагов.
+{% endif %}
+
+За сегодня ты прошел {% if diffWithPrevDay == 0 %} столько же сколько и за прошлый раз. {% else %} на <strong>{{ diffWithPrevDay|abs }}</strong> {{ diffWithPrevDay > 0 ? 'больше' : 'меньше' }} чем в прошлый раз.

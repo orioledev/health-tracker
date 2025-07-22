@@ -41,7 +41,7 @@ abstract class BaseTelegramCommand extends AbstractCommand implements PublicComm
 
     protected function matchCommandName(string $text, string $name): bool
     {
-        preg_match(self::COMMAND_NAME_REGEXP, $text, $matches);
+        preg_match(static::COMMAND_NAME_REGEXP, $text, $matches);
 
         return !empty($matches) && $matches[1] == $name;
     }
