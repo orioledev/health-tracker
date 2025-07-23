@@ -19,7 +19,7 @@ final readonly class MealParser implements MealParserInterface
             throw new MealParserException('Введите название продукта и его вес');
         }
 
-        $pattern = '/(\d+(?:\.\d+)?)\s*(граммов|грамм|гр\.|гр|г)?/im';
+        $pattern = '/(\d+(?:\.\d+)?)\s*(граммов|грамм|гр\.|гр|г\.|г)?/im';
 
         if (!preg_match($pattern, $input, $matches)) {
             throw new MealParserException('Не удалось определить вес блюда');
