@@ -15,6 +15,7 @@ use App\HealthTracker\Domain\ValueObject\Shared\Weight;
 use App\HealthTracker\Domain\ValueObject\UserIndicator\Height;
 use App\HealthTracker\Infrastructure\Exception\InvalidParameterException;
 use App\HealthTracker\Infrastructure\Telegram\DTO\AcquaintanceUserData;
+use App\HealthTracker\Infrastructure\Telegram\Enum\TelegramCommand;
 use App\HealthTracker\Infrastructure\Telegram\Handler\AcquaintanceHandler;
 use App\HealthTracker\Infrastructure\Telegram\Handler\MultipleStepHandlerDataInterface;
 use App\HealthTracker\Infrastructure\Telegram\Message\MessagePayload;
@@ -33,8 +34,6 @@ use ValueError;
 
 final class AcquaintanceTelegramCommand extends BaseMultipleStepTelegramCommand implements PublicCommandInterface
 {
-    public const string NAME = '/start';
-
     public function __construct(
         Environment $twig,
         AcquaintanceHandler $handler,
@@ -47,7 +46,14 @@ final class AcquaintanceTelegramCommand extends BaseMultipleStepTelegramCommand 
 
     public function getName(): string
     {
-        return self::NAME;
+        return TelegramCommand::START->value;
+    }
+
+    public function getAliases(): array
+    {
+        return [
+            TelegramCommand::START->getAlias(),
+        ];
     }
 
     public function getDescription(): string
@@ -70,7 +76,7 @@ final class AcquaintanceTelegramCommand extends BaseMultipleStepTelegramCommand 
 
         if ($isUserExists) {
             throw new UserAlreadyExistsException(
-                'Мы уже познакомились с тобой. Для того, чтобы узнать, что я умею, нажми /help'
+                'Мы уже познакомились с тобой. Для того, чтобы узнать, что я умею, нажми ' . TelegramCommand::HELP->value
             );
         }
     }

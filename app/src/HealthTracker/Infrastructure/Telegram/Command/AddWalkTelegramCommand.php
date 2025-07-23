@@ -11,6 +11,7 @@ use App\HealthTracker\Domain\ValueObject\Shared\StepsAmount;
 use App\HealthTracker\Infrastructure\Exception\InvalidParameterException;
 use App\HealthTracker\Infrastructure\Exception\NeedAcquaintanceException;
 use App\HealthTracker\Infrastructure\Telegram\DTO\AddWalkData;
+use App\HealthTracker\Infrastructure\Telegram\Enum\TelegramCommand;
 use App\HealthTracker\Infrastructure\Telegram\Handler\AddWalkHandler;
 use App\HealthTracker\Infrastructure\Telegram\Handler\MultipleStepHandlerDataInterface;
 use App\Shared\Application\Bus\CommandBusInterface;
@@ -23,8 +24,6 @@ use Twig\Environment;
 
 final class AddWalkTelegramCommand extends BaseMultipleStepTelegramCommand
 {
-    public const string NAME = 'Добавить прогулку';
-
     public function __construct(
         Environment $twig,
         AddWalkHandler $handler,
@@ -37,14 +36,16 @@ final class AddWalkTelegramCommand extends BaseMultipleStepTelegramCommand
 
     public function getName(): string
     {
-        return self::NAME;
+        return TelegramCommand::ADD_WALK->value;
     }
+
     public function getAliases(): array
     {
         return [
-            '/addwalk',
+            TelegramCommand::ADD_WALK->getAlias(),
         ];
     }
+
     public function getDescription(): string
     {
         return 'Добавление прогулки (шагов)';
@@ -52,7 +53,7 @@ final class AddWalkTelegramCommand extends BaseMultipleStepTelegramCommand
 
     public function getSortOrder(): int
     {
-        return 200;
+        return 400;
     }
 
     /**

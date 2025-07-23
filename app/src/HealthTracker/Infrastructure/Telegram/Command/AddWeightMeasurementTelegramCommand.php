@@ -11,6 +11,7 @@ use App\HealthTracker\Domain\ValueObject\Shared\Weight;
 use App\HealthTracker\Infrastructure\Exception\InvalidParameterException;
 use App\HealthTracker\Infrastructure\Exception\NeedAcquaintanceException;
 use App\HealthTracker\Infrastructure\Telegram\DTO\AddWeightMeasurementData;
+use App\HealthTracker\Infrastructure\Telegram\Enum\TelegramCommand;
 use App\HealthTracker\Infrastructure\Telegram\Handler\AddWeightMeasurementHandler;
 use App\HealthTracker\Infrastructure\Telegram\Handler\MultipleStepHandlerDataInterface;
 use App\Shared\Application\Bus\CommandBusInterface;
@@ -23,8 +24,6 @@ use Twig\Environment;
 
 final class AddWeightMeasurementTelegramCommand extends BaseMultipleStepTelegramCommand
 {
-    public const string NAME = 'Добавить взвешивание';
-
     public function __construct(
         Environment $twig,
         AddWeightMeasurementHandler $handler,
@@ -37,12 +36,13 @@ final class AddWeightMeasurementTelegramCommand extends BaseMultipleStepTelegram
 
     public function getName(): string
     {
-        return self::NAME;
+        return TelegramCommand::ADD_WEIGHT_MEASUREMENT->value;
     }
+
     public function getAliases(): array
     {
         return [
-            '/addweight',
+            TelegramCommand::ADD_WEIGHT_MEASUREMENT->getAlias(),
         ];
     }
 

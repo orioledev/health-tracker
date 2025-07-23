@@ -10,6 +10,7 @@ use App\HealthTracker\Application\Telegram\Query\CheckUserExistenceByTelegramUse
 use App\HealthTracker\Infrastructure\Exception\InvalidParameterException;
 use App\HealthTracker\Infrastructure\Exception\NeedAcquaintanceException;
 use App\HealthTracker\Infrastructure\Telegram\DTO\AddMealData;
+use App\HealthTracker\Infrastructure\Telegram\Enum\TelegramCommand;
 use App\HealthTracker\Infrastructure\Telegram\Handler\AddMealHandler;
 use App\HealthTracker\Infrastructure\Telegram\Handler\MultipleStepHandlerDataInterface;
 use App\Shared\Application\Bus\CommandBusInterface;
@@ -22,8 +23,6 @@ use Twig\Environment;
 
 final class AddMealTelegramCommand extends BaseMultipleStepTelegramCommand
 {
-    public const string NAME = 'Добавить прием пищи';
-
     public function __construct(
         Environment $twig,
         AddMealHandler $handler,
@@ -36,13 +35,13 @@ final class AddMealTelegramCommand extends BaseMultipleStepTelegramCommand
 
     public function getName(): string
     {
-        return self::NAME;
+        return TelegramCommand::ADD_MEAL->value;
     }
 
     public function getAliases(): array
     {
         return [
-            '/addmeal',
+            TelegramCommand::ADD_MEAL->getAlias(),
         ];
     }
 
