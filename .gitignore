@@ -4,3 +4,4 @@
 .DS_Store
 .AppleDouble
 .LSOverride
+app/.phpunit.result.cache
