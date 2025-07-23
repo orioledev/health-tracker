@@ -15,6 +15,7 @@ use Twig\Environment;
 
 final class HelpTelegramCommand extends BaseTelegramCommand implements PublicCommandInterface
 {
+    public const string COMMAND_NAME_REGEXP = '/^(\/help)$/';
     public const string NAME = '/help';
 
     public function __construct(

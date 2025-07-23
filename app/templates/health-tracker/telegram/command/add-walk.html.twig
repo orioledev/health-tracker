@@ -1,0 +1,10 @@
+{% set diffWithTarget = dailyNormSteps - todaySteps %}
+{% set percent = todaySteps/dailyNormSteps*100 %}
+
+    Ты прошел <strong>{{ currentSteps }}</strong> шагов и потратил за прогулку <strong>{{ currentCalories }}</strong> ккал.
+{% if (diffWithTarget <= 0) %}
+    Отлично! Дневная норма по шагам ({{ dailyNormSteps }}) перевыполнена на {{ percent|round }}%!
+{% else %}
+    Ты уже прошел сегодня {{ todaySteps }} шагов из {{ dailyNormSteps }}.
+    Осталось пройти еще <strong>{{ diffWithTarget }}</strong> шагов.
+{% endif %}

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\HealthTracker\Infrastructure\Telegram\Command;
 
-use App\HealthTracker\Application\Telegram\Command\AddWeightMeasurement\AddWeightMeasurementCommand;
-use App\HealthTracker\Application\Telegram\Command\AddWeightMeasurement\AddWeightMeasurementCommandResult;
+use App\HealthTracker\Application\Telegram\Command\AddWalk\AddWalkCommand;
+use App\HealthTracker\Application\Telegram\Command\AddWalk\AddWalkCommandResult;
 use App\HealthTracker\Application\Telegram\Query\CheckUserExistenceByTelegramUserId\CheckUserExistenceByTelegramUserIdQuery;
-use App\HealthTracker\Domain\ValueObject\Shared\Weight;
+use App\HealthTracker\Domain\ValueObject\Shared\StepsAmount;
 use App\HealthTracker\Infrastructure\Exception\InvalidParameterException;
 use App\HealthTracker\Infrastructure\Exception\NeedAcquaintanceException;
-use App\HealthTracker\Infrastructure\Telegram\DTO\AddWeightMeasurementData;
-use App\HealthTracker\Infrastructure\Telegram\Handler\AddWeightMeasurementHandler;
+use App\HealthTracker\Infrastructure\Telegram\DTO\AddWalkData;
+use App\HealthTracker\Infrastructure\Telegram\Handler\AddWalkHandler;
 use App\HealthTracker\Infrastructure\Telegram\Handler\MultipleStepHandlerDataInterface;
 use App\Shared\Application\Bus\CommandBusInterface;
 use App\Shared\Application\Bus\QueryBusInterface;
@@ -21,13 +21,13 @@ use TelegramBot\Api\InvalidArgumentException;
 use TelegramBot\Api\Types\Update;
 use Twig\Environment;
 
-final class AddWeightMeasurementTelegramCommand extends BaseMultipleStepTelegramCommand
+final class AddWalkTelegramCommand extends BaseMultipleStepTelegramCommand
 {
-    public const string NAME = 'Добавить взвешивание';
+    public const string NAME = 'Добавить прогулку';
 
     public function __construct(
         Environment $twig,
-        AddWeightMeasurementHandler $handler,
+        AddWalkHandler $handler,
         private readonly QueryBusInterface $queryBus,
         private readonly CommandBusInterface $commandBus,
     )
@@ -42,13 +42,12 @@ final class AddWeightMeasurementTelegramCommand extends BaseMultipleStepTelegram
     public function getAliases(): array
     {
         return [
-            '/addweight',
+            '/addwalk',
         ];
     }
-
     public function getDescription(): string
     {
-        return 'Добавление нового взвешивания';
+        return 'Добавление прогулки (шагов)';
     }
 
     public function getSortOrder(): int
@@ -64,6 +63,9 @@ final class AddWeightMeasurementTelegramCommand extends BaseMultipleStepTelegram
     protected function beforeExecute(Update $update): void
     {
         $telegramUser = $this->getTelegramUser($update);
+        if (!$telegramUser) {
+            throw new \InvalidArgumentException('Не удалось определить пользователя telegram');
+        }
 
         $isUserExists = $this->queryBus->ask(
             new CheckUserExistenceByTelegramUserIdQuery($telegramUser?->getId())
@@ -76,11 +78,11 @@ final class AddWeightMeasurementTelegramCommand extends BaseMultipleStepTelegram
 
     /**
      * @param Update $update
-     * @return AddWeightMeasurementData
+     * @return AddWalkData
      */
-    protected function createData(Update $update): AddWeightMeasurementData
+    protected function createData(Update $update): AddWalkData
     {
-        /** @var AddWeightMeasurementData $data */
+        /** @var AddWalkData $data */
         $data = parent::createData($update);
 
         return $data;
@@ -109,17 +111,13 @@ final class AddWeightMeasurementTelegramCommand extends BaseMultipleStepTelegram
 
         $telegramUser = $this->getTelegramUser($update);
 
-        if (!$telegramUser) {
-            throw new \InvalidArgumentException('Не удалось определить пользователя telegram');
-        }
-
-        /** @var AddWeightMeasurementData $data */
-        $command = new AddWeightMeasurementCommand(
+        /** @var AddWalkData $data */
+        $command = new AddWalkCommand(
             telegramUserId: $telegramUser->getId(),
-            weight: $data->weight,
+            steps: $data->steps,
         );
 
-        /** @var AddWeightMeasurementCommandResult $result */
+        /** @var AddWalkCommandResult $result */
         $result = $this->commandBus->dispatch($command);
 
         $this->sendSuccessMessage($api, $chatId, $result->toArray());
@@ -127,39 +125,39 @@ final class AddWeightMeasurementTelegramCommand extends BaseMultipleStepTelegram
 
     protected function getSuccessMessageTemplate(): string
     {
-        return 'health-tracker/telegram/command/add-weight-measurement.html.twig';
+        return 'health-tracker/telegram/command/add-walk.html.twig';
     }
 
     /**
      * @param BotApi $api
      * @param Update $update
      * @param string $chatId
-     * @param AddWeightMeasurementData $data
+     * @param AddWalkData $data
      * @return void
      * @throws Exception
      * @throws InvalidArgumentException
      */
-    protected function step0(BotApi $api, Update $update, string $chatId, AddWeightMeasurementData $data): void
+    protected function step0(BotApi $api, Update $update, string $chatId, AddWalkData $data): void
     {
-        $this->sendTextMessage($api, $chatId, 'Введи свой текущий вес (кг)');
+        $this->sendTextMessage($api, $chatId, 'Введи количество пройденных шагов');
     }
 
     /**
      * @param BotApi $api
      * @param Update $update
      * @param string $chatId
-     * @param AddWeightMeasurementData $data
+     * @param AddWalkData $data
      * @return void
      */
-    protected function step1(BotApi $api, Update $update, string $chatId, AddWeightMeasurementData $data): void
+    protected function step1(BotApi $api, Update $update, string $chatId, AddWalkData $data): void
     {
         $message = $update->getMessage();
 
         try {
-            $weight = new Weight($message->getText());
-            $data->weight = $weight->value();
+            $steps = new StepsAmount($message->getText());
+            $data->steps = $steps->value();
         } catch (\InvalidArgumentException $e) {
-            $errorMessage = sprintf('Введен некорректный вес (%s)', $e->getMessage());
+            $errorMessage = sprintf('Введен неверное количество шагов (%s)', $e->getMessage());
             throw new InvalidParameterException($errorMessage);
         }
     }
