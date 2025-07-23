@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\HealthTracker\Infrastructure\Telegram\Command;
 
+use App\HealthTracker\Infrastructure\Telegram\Enum\TelegramCommand;
 use App\HealthTracker\Infrastructure\Telegram\Message\MessagePayload;
 use BoShurik\TelegramBotBundle\Telegram\Command\AbstractCommand;
 use BoShurik\TelegramBotBundle\Telegram\Command\PublicCommandInterface;
@@ -11,6 +12,7 @@ use TelegramBot\Api\BotApi;
 use TelegramBot\Api\Exception;
 use TelegramBot\Api\InvalidArgumentException;
 use TelegramBot\Api\Types\Message;
+use TelegramBot\Api\Types\ReplyKeyboardMarkup;
 use TelegramBot\Api\Types\Update;
 use TelegramBot\Api\Types\User;
 use Throwable;
@@ -127,7 +129,8 @@ abstract class BaseTelegramCommand extends AbstractCommand implements PublicComm
             $api,
             $chatId,
             $this->getSuccessMessageTemplate(),
-            $context
+            $context,
+            true
         );
     }
 
@@ -179,6 +182,7 @@ abstract class BaseTelegramCommand extends AbstractCommand implements PublicComm
         int|string|float $chatId,
         string $template,
         array $templateContext = [],
+        bool $showMenuButtons = false,
     ): void
     {
         try {
@@ -189,10 +193,31 @@ abstract class BaseTelegramCommand extends AbstractCommand implements PublicComm
 
         $payload = new MessagePayload(
             chatId: $chatId,
-            text: $text
+            text: $text,
+            replyMarkup: $showMenuButtons
+                ? $this->renderReplyKeyboard()
+                : null,
         );
 
         $this->sendApiMessage($api, $payload);
+    }
+
+    protected function renderReplyKeyboard(): ReplyKeyboardMarkup
+    {
+        $keyboard = [
+            [
+                TelegramCommand::ADD_WEIGHT_MEASUREMENT->getAlias(),
+                TelegramCommand::ADD_MEAL->getAlias(),
+            ],
+            [
+                TelegramCommand::ADD_WALK->getAlias(),
+                TelegramCommand::HELP->getAlias(),
+            ],
+        ];
+
+        return new ReplyKeyboardMarkup(
+            keyboard: $keyboard,
+        );
     }
 
     /**
