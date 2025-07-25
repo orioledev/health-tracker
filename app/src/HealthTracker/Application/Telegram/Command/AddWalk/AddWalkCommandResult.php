@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\HealthTracker\Application\Telegram\Command\AddWalk;
 
-use App\Shared\Application\Command\CommandInterface;
-
-final readonly class AddWalkCommandResult implements CommandInterface
+final readonly class AddWalkCommandResult
 {
     public function __construct(
         public int $currentSteps,

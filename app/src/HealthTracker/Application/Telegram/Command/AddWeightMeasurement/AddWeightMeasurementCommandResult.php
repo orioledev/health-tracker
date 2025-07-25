@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace App\HealthTracker\Application\Telegram\Command\AddWeightMeasurement;
 
 use App\HealthTracker\Domain\Enum\WeightTargetType;
-use App\Shared\Application\Command\CommandInterface;
 
-final readonly class AddWeightMeasurementCommandResult implements CommandInterface
+final readonly class AddWeightMeasurementCommandResult
 {
     public function __construct(
         public float $currentWeight,
