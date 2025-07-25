@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\HealthTracker\Infrastructure\Telegram\Command;
 
+use App\HealthTracker\Infrastructure\Telegram\Enum\TelegramCommand;
+use App\Shared\Application\Bus\QueryBusInterface;
 use BoShurik\TelegramBotBundle\Telegram\Command\CommandInterface;
 use BoShurik\TelegramBotBundle\Telegram\Command\PublicCommandInterface;
 use BoShurik\TelegramBotBundle\Telegram\Command\Registry\CommandRegistry;
@@ -15,26 +17,24 @@ use Twig\Environment;
 
 final class HelpTelegramCommand extends BaseTelegramCommand implements PublicCommandInterface
 {
-    public const string COMMAND_NAME_REGEXP = '/^(\/help)$/';
-    public const string NAME = '/help';
-
     public function __construct(
-        Environment                      $twig,
+        Environment $twig,
+        QueryBusInterface $queryBus,
         private readonly CommandRegistry $commandRegistry,
     )
     {
-        parent::__construct($twig);
+        parent::__construct($twig, $queryBus);
     }
 
     public function getName(): string
     {
-        return self::NAME;
+        return TelegramCommand::HELP->value;
     }
 
     public function getAliases(): array
     {
         return [
-            '/help',
+            TelegramCommand::HELP->getAlias(),
         ];
     }
 
@@ -57,6 +57,8 @@ final class HelpTelegramCommand extends BaseTelegramCommand implements PublicCom
      */
     public function execute(BotApi $api, Update $update): void
     {
+        parent::execute($api, $update);
+
         $commands = $this->commandRegistry->getCommands();
 
         usort($commands, function (CommandInterface $a, CommandInterface $b): int {
@@ -78,8 +80,26 @@ final class HelpTelegramCommand extends BaseTelegramCommand implements PublicCom
                 continue;
             }
 
+            $name = $command->getName();
+            $alias = method_exists($command, 'getAliases')
+                ? current($command->getAliases())
+                : null;
+
+            $isStartCommand = $name === TelegramCommand::START->value || $alias === TelegramCommand::START->getAlias();
+
+            if ($this->isUserExists) {
+                if ($isStartCommand) {
+                    continue;
+                }
+            } else {
+                if (!$isStartCommand) {
+                    continue;
+                }
+            }
+
             $context['commands'][] = [
-                'name' => $command->getName(),
+                'name' => $name,
+                'alias' => $alias,
                 'description' => $command->getDescription(),
             ];
         }
@@ -87,7 +107,8 @@ final class HelpTelegramCommand extends BaseTelegramCommand implements PublicCom
         $this->sendSuccessMessage(
             $api,
             $update->getMessage()?->getChat()->getId(),
-            $context
+            $context,
+            false
         );
     }
 

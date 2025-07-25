@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\HealthTracker\Infrastructure\Telegram\Command;
 
+use App\HealthTracker\Application\Telegram\Query\CheckUserExistenceByTelegramUserId\CheckUserExistenceByTelegramUserIdQuery;
 use App\HealthTracker\Infrastructure\Telegram\Enum\TelegramCommand;
 use App\HealthTracker\Infrastructure\Telegram\Message\MessagePayload;
+use App\Shared\Application\Bus\QueryBusInterface;
 use BoShurik\TelegramBotBundle\Telegram\Command\AbstractCommand;
 use BoShurik\TelegramBotBundle\Telegram\Command\PublicCommandInterface;
 use TelegramBot\Api\BotApi;
@@ -13,6 +15,7 @@ use TelegramBot\Api\Exception;
 use TelegramBot\Api\InvalidArgumentException;
 use TelegramBot\Api\Types\Message;
 use TelegramBot\Api\Types\ReplyKeyboardMarkup;
+use TelegramBot\Api\Types\ReplyKeyboardRemove;
 use TelegramBot\Api\Types\Update;
 use TelegramBot\Api\Types\User;
 use Throwable;
@@ -22,24 +25,34 @@ abstract class BaseTelegramCommand extends AbstractCommand implements PublicComm
 {
     public const string COMMAND_NAME_REGEXP = '/^([^@]+)$/';
 
-    private ?Message $_telegramMessage = null;
-    private ?User $_telegramUser = null;
+    protected ?Message $telegramMessage = null {
+        get {
+            return $this->telegramMessage;
+        }
+    }
+    protected ?User $telegramUser = null {
+        get {
+            return $this->telegramUser;
+        }
+    }
+    protected ?bool $isUserExists = null {
+        get {
+            return $this->isUserExists;
+        }
+    }
+
 
     public function __construct(
         protected readonly Environment $twig,
+        protected readonly QueryBusInterface $queryBus,
     ) {}
 
-    public function getExamples(): array
-    {
-        return [];
-    }
+    abstract protected function getSuccessMessageTemplate(): string;
 
     public function getSortOrder(): int
     {
         return 1;
     }
-
-    abstract protected function getSuccessMessageTemplate(): string;
 
     protected function matchCommandName(string $text, string $name): bool
     {
@@ -53,34 +66,41 @@ abstract class BaseTelegramCommand extends AbstractCommand implements PublicComm
         return null;
     }
 
+    public function execute(BotApi $api, Update $update): void
+    {
+        $this->init($api, $update);
+    }
+
+    protected function init(BotApi $api, Update $update): void
+    {
+        $this->telegramMessage = $this->getTelegramMessage($update);
+        $this->telegramUser = $this->getTelegramUser($update);
+
+        if (!$this->telegramUser) {
+            throw new \InvalidArgumentException('Не удалось определить пользователя telegram');
+        }
+
+        $this->isUserExists = $this->queryBus->ask(
+            new CheckUserExistenceByTelegramUserIdQuery($this->telegramUser->getId())
+        );
+    }
+
     protected function getTelegramMessage(Update $update): ?Message
     {
-        if ($this->_telegramMessage !== null) {
-            return $this->_telegramMessage;
-        }
-
         if ($update->getCallbackQuery()) {
-            $this->_telegramMessage = $update->getCallbackQuery()->getMessage();
-        } else {
-            $this->_telegramMessage = $update->getMessage();
+            return $update->getCallbackQuery()->getMessage();
         }
 
-        return $this->_telegramMessage;
+        return $update->getMessage();
     }
 
     protected function getTelegramUser(Update $update): ?User
     {
-        if ($this->_telegramUser !== null) {
-            return $this->_telegramUser;
-        }
-
         if ($update->getCallbackQuery()) {
-            $this->_telegramUser = $update->getCallbackQuery()->getFrom();
-        } else {
-            $this->_telegramUser = $update->getMessage()?->getFrom();
+            return $update->getCallbackQuery()->getFrom();
         }
 
-        return $this->_telegramUser;
+        return $update->getMessage()?->getFrom();
     }
 
     protected function getErrorMessageTemplate(): string
@@ -119,18 +139,24 @@ abstract class BaseTelegramCommand extends AbstractCommand implements PublicComm
      * @param BotApi $api
      * @param int|string|float $chatId
      * @param array $context
+     * @param bool $showMenuButtons
      * @return void
      * @throws Exception
      * @throws InvalidArgumentException
      */
-    protected function sendSuccessMessage(BotApi $api, int|string|float $chatId, array $context = []): void
+    protected function sendSuccessMessage(
+        BotApi $api,
+        int|string|float $chatId,
+        array $context = [],
+        bool $showMenuButtons = true,
+    ): void
     {
         $this->sendMessageWithTemplate(
             $api,
             $chatId,
             $this->getSuccessMessageTemplate(),
             $context,
-            true
+            $showMenuButtons
         );
     }
 
@@ -146,7 +172,7 @@ abstract class BaseTelegramCommand extends AbstractCommand implements PublicComm
         $this->sendMessageWithTemplate(
             $api,
             $chatId,
-            $this->getNeedAcquaintanceMessageTemplate()
+            $this->getNeedAcquaintanceMessageTemplate(),
         );
     }
 
@@ -173,6 +199,8 @@ abstract class BaseTelegramCommand extends AbstractCommand implements PublicComm
      * @param int|string|float $chatId
      * @param string $template
      * @param array $templateContext
+     * @param bool $showMenuButtons
+     * @param bool $removeMenu
      * @return void
      * @throws Exception
      * @throws InvalidArgumentException
@@ -183,6 +211,7 @@ abstract class BaseTelegramCommand extends AbstractCommand implements PublicComm
         string $template,
         array $templateContext = [],
         bool $showMenuButtons = false,
+        bool $removeMenu = false,
     ): void
     {
         try {
@@ -191,12 +220,17 @@ abstract class BaseTelegramCommand extends AbstractCommand implements PublicComm
             $text = $e->getMessage();
         }
 
+        $replyMarkup = null;
+        if ($removeMenu) {
+            $replyMarkup = new ReplyKeyboardRemove();
+        } elseif ($showMenuButtons) {
+            $replyMarkup = $this->renderReplyKeyboard();
+        }
+
         $payload = new MessagePayload(
             chatId: $chatId,
             text: $text,
-            replyMarkup: $showMenuButtons
-                ? $this->renderReplyKeyboard()
-                : null,
+            replyMarkup: $replyMarkup,
         );
 
         $this->sendApiMessage($api, $payload);
@@ -217,6 +251,7 @@ abstract class BaseTelegramCommand extends AbstractCommand implements PublicComm
 
         return new ReplyKeyboardMarkup(
             keyboard: $keyboard,
+            resizeKeyboard: true,
         );
     }
 

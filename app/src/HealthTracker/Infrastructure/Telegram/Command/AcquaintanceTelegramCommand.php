@@ -6,7 +6,6 @@ namespace App\HealthTracker\Infrastructure\Telegram\Command;
 
 use App\HealthTracker\Application\Telegram\Command\CreateUser\CreateUserCommand;
 use App\HealthTracker\Application\Telegram\Command\CreateUser\CreateUserCommandResult;
-use App\HealthTracker\Application\Telegram\Query\CheckUserExistenceByTelegramUserId\CheckUserExistenceByTelegramUserIdQuery;
 use App\HealthTracker\Domain\Enum\ActivityLevel;
 use App\HealthTracker\Domain\Enum\Gender;
 use App\HealthTracker\Domain\Enum\WeightTargetType;
@@ -36,12 +35,12 @@ final class AcquaintanceTelegramCommand extends BaseMultipleStepTelegramCommand 
 {
     public function __construct(
         Environment $twig,
+        QueryBusInterface $queryBus,
         AcquaintanceHandler $handler,
-        private readonly QueryBusInterface $queryBus,
         private readonly CommandBusInterface $commandBus,
     )
     {
-        parent::__construct($twig, $handler);
+        parent::__construct($twig, $queryBus, $handler);
     }
 
     public function getName(): string
@@ -66,15 +65,15 @@ final class AcquaintanceTelegramCommand extends BaseMultipleStepTelegramCommand 
         return 100;
     }
 
-    protected function beforeExecute(Update $update): void
+    /**
+     * @param BotApi $api
+     * @param Update $update
+     * @return void
+     * @throws UserAlreadyExistsException
+     */
+    protected function beforeExecute(BotApi $api, Update $update): void
     {
-        $telegramUser = $this->getTelegramUser($update);
-
-        $isUserExists = $this->queryBus->ask(
-            new CheckUserExistenceByTelegramUserIdQuery($telegramUser?->getId())
-        );
-
-        if ($isUserExists) {
+        if ($this->isUserExists) {
             throw new UserAlreadyExistsException(
                 'Мы уже познакомились с тобой. Для того, чтобы узнать, что я умею, нажми ' . TelegramCommand::HELP->value
             );
@@ -102,11 +101,7 @@ final class AcquaintanceTelegramCommand extends BaseMultipleStepTelegramCommand 
             throw new \InvalidArgumentException('Переданы некорректные данные');
         }
 
-        $telegramUser = $this->getTelegramUser($update);
-
-        if (!$telegramUser) {
-            throw new \InvalidArgumentException('Не удалось определить пользователя telegram');
-        }
+        $telegramUser = $this->telegramUser;
 
         /** @var AcquaintanceUserData $data */
         $command = new CreateUserCommand(
@@ -150,11 +145,7 @@ final class AcquaintanceTelegramCommand extends BaseMultipleStepTelegramCommand 
      */
     protected function step0(BotApi $api, Update $update, string $chatId, AcquaintanceUserData $data): void
     {
-        $telegramUser = $this->getTelegramUser($update);
-
-        if (!$telegramUser) {
-            throw new \InvalidArgumentException('Не удалось определить пользователя telegram');
-        }
+        $telegramUser = $this->telegramUser;
 
         $this->sendMessageWithTemplate(
             $api,
@@ -167,7 +158,9 @@ final class AcquaintanceTelegramCommand extends BaseMultipleStepTelegramCommand 
                     'firstName' => $telegramUser->getFirstName(),
                     'lastName' => $telegramUser->getLastName(),
                 ],
-            ]
+            ],
+            false,
+            true
         );
 
         // Gender buttons
@@ -221,10 +214,8 @@ final class AcquaintanceTelegramCommand extends BaseMultipleStepTelegramCommand 
      */
     protected function step2(BotApi $api, Update $update, string $chatId, AcquaintanceUserData $data): void
     {
-        $message = $update->getMessage();
-
         try {
-            $birthdate = new DateTimeImmutable($message->getText());
+            $birthdate = new DateTimeImmutable($update->getMessage()?->getText());
             $data->birthdate = $birthdate;
         } catch (DateMalformedStringException) {
             throw new InvalidParameterException('Введена некорректная дата рождения (дд.мм.гггг)');
@@ -244,10 +235,8 @@ final class AcquaintanceTelegramCommand extends BaseMultipleStepTelegramCommand 
      */
     protected function step3(BotApi $api, Update $update, string $chatId, AcquaintanceUserData $data): void
     {
-        $message = $update->getMessage();
-
         try {
-            $height = new Height((int)$message->getText());
+            $height = new Height((int)$update->getMessage()?->getText());
             $data->height = $height->value();
         } catch (\InvalidArgumentException $e) {
             $errorMessage = sprintf('Введен некорректный рост (%s)', $e->getMessage());
@@ -268,10 +257,8 @@ final class AcquaintanceTelegramCommand extends BaseMultipleStepTelegramCommand 
      */
     protected function step4(BotApi $api, Update $update, string $chatId, AcquaintanceUserData $data): void
     {
-        $message = $update->getMessage();
-
         try {
-            $weight = new Weight($message->getText());
+            $weight = new Weight($update->getMessage()?->getText());
             $data->initialWeight = $weight->value();
         } catch (\InvalidArgumentException $e) {
             $errorMessage = sprintf('Введен некорректный текущий вес (%s)', $e->getMessage());
@@ -292,10 +279,8 @@ final class AcquaintanceTelegramCommand extends BaseMultipleStepTelegramCommand 
      */
     protected function step5(BotApi $api, Update $update, string $chatId, AcquaintanceUserData $data): void
     {
-        $message = $update->getMessage();
-
         try {
-            $weight = new Weight($message->getText());
+            $weight = new Weight($update->getMessage()?->getText());
             $data->targetWeight = $weight->value();
         } catch (\InvalidArgumentException $e) {
             $errorMessage = sprintf('Введен некорректный вес, к которому ты стремишься (%s)', $e->getMessage());
@@ -373,5 +358,20 @@ final class AcquaintanceTelegramCommand extends BaseMultipleStepTelegramCommand 
         } catch (ValueError) {
             throw new InvalidParameterException('Выбран некорректный уровень физической активности');
         }
+    }
+
+    protected function getEnumValue(Update $update): ?string
+    {
+        $regexp = '/[a-zA-Z_]+_(\d+)/';
+
+        if ($update->getMessage() && preg_match($regexp, $update->getMessage()->getText(), $matches)) {
+            return $matches[1];
+        }
+
+        if ($update->getCallbackQuery() && preg_match($regexp, $update->getCallbackQuery()->getData(), $matches)) {
+            return $matches[1];
+        }
+
+        return null;
     }
 }

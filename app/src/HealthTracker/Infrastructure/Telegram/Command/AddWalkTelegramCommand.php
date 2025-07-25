@@ -6,7 +6,6 @@ namespace App\HealthTracker\Infrastructure\Telegram\Command;
 
 use App\HealthTracker\Application\Telegram\Command\AddWalk\AddWalkCommand;
 use App\HealthTracker\Application\Telegram\Command\AddWalk\AddWalkCommandResult;
-use App\HealthTracker\Application\Telegram\Query\CheckUserExistenceByTelegramUserId\CheckUserExistenceByTelegramUserIdQuery;
 use App\HealthTracker\Domain\ValueObject\Shared\StepsAmount;
 use App\HealthTracker\Infrastructure\Exception\InvalidParameterException;
 use App\HealthTracker\Infrastructure\Exception\NeedAcquaintanceException;
@@ -26,12 +25,12 @@ final class AddWalkTelegramCommand extends BaseMultipleStepTelegramCommand
 {
     public function __construct(
         Environment $twig,
+        QueryBusInterface $queryBus,
         AddWalkHandler $handler,
-        private readonly QueryBusInterface $queryBus,
         private readonly CommandBusInterface $commandBus,
     )
     {
-        parent::__construct($twig, $handler);
+        parent::__construct($twig, $queryBus, $handler);
     }
 
     public function getName(): string
@@ -57,22 +56,14 @@ final class AddWalkTelegramCommand extends BaseMultipleStepTelegramCommand
     }
 
     /**
+     * @param BotApi $api
      * @param Update $update
      * @return void
      * @throws NeedAcquaintanceException
      */
-    protected function beforeExecute(Update $update): void
+    protected function beforeExecute(BotApi $api, Update $update): void
     {
-        $telegramUser = $this->getTelegramUser($update);
-        if (!$telegramUser) {
-            throw new \InvalidArgumentException('Не удалось определить пользователя telegram');
-        }
-
-        $isUserExists = $this->queryBus->ask(
-            new CheckUserExistenceByTelegramUserIdQuery($telegramUser?->getId())
-        );
-
-        if (!$isUserExists) {
+        if (!$this->isUserExists) {
             throw new NeedAcquaintanceException();
         }
     }
@@ -110,11 +101,9 @@ final class AddWalkTelegramCommand extends BaseMultipleStepTelegramCommand
             throw new \InvalidArgumentException('Переданы некорректные данные');
         }
 
-        $telegramUser = $this->getTelegramUser($update);
-
         /** @var AddWalkData $data */
         $command = new AddWalkCommand(
-            telegramUserId: $telegramUser->getId(),
+            telegramUserId: $this->telegramUser->getId(),
             steps: $data->steps,
         );
 
@@ -152,10 +141,8 @@ final class AddWalkTelegramCommand extends BaseMultipleStepTelegramCommand
      */
     protected function step1(BotApi $api, Update $update, string $chatId, AddWalkData $data): void
     {
-        $message = $update->getMessage();
-
         try {
-            $steps = new StepsAmount($message->getText());
+            $steps = new StepsAmount($update->getMessage()?->getText());
             $data->steps = $steps->value();
         } catch (\InvalidArgumentException $e) {
             $errorMessage = sprintf('Введен неверное количество шагов (%s)', $e->getMessage());

@@ -27,8 +27,7 @@ services:
 
     App\HealthTracker\Infrastructure\Telegram\Command\HelpTelegramCommand:
         arguments:
-            - '@twig'
-            - '@boshurik_telegram_bot.command.registry.default'
+            $commandRegistry: '@boshurik_telegram_bot.command.registry.default'
         tags:
             - { name: boshurik_telegram_bot.command, priority: -1024 }
 
