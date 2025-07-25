@@ -11,9 +11,8 @@ use App\Shared\Application\HttpClient\HttpClientInterface;
 
 final readonly class FoodInfoGateway implements FoodInfoGatewayInterface
 {
-
     public function __construct(
-        private HttpClientInterface $httpClient
+        private HttpClientInterface $httpClient,
     ) {}
 
     public function findOne(FoodInfoGatewayRequest $request): ?FoodInfoGatewayResponse
@@ -28,7 +27,7 @@ final readonly class FoodInfoGateway implements FoodInfoGatewayInterface
                     'json' => '1',
                     'categories_lc' => 'ru',
                     'lang' => 'ru',
-                    'fields' => 'categories_hierarchy,nutriments,product_name_ru,id',
+                    'fields' => 'id,product_name_ru,product_name,nutriments',
                 ]
             ]
         );
@@ -37,15 +36,36 @@ final readonly class FoodInfoGateway implements FoodInfoGatewayInterface
             return null;
         }
 
-        $product = $response['products'][0];
+        foreach ($response['products'] as $currentProduct) {
+            $name = $currentProduct['product_name_ru'] ?? $currentProduct['product_name'] ?? null;
+            $nutriments = $currentProduct['nutriments'] ?? [];
 
-        return new FoodInfoGatewayResponse(
-            externalId: $product['id'],
-            externalName: $product['product_name_ru'],
-            calories: $product['nutriments']['energy-kcal_100g'] ?? 0,
-            proteins: $product['nutriments']['proteins_100g'] ?? 0,
-            fats: $product['nutriments']['fat_100g'] ?? 0,
-            carbohydrates: $product['nutriments']['carbohydrates_100g'] ?? 0
-        );
+            if (empty($name) || empty($nutriments)) {
+                continue;
+            }
+
+            $calories = $nutriments['energy-kcal_100g'] ?? $nutriments['energy-kcal'] ?? $nutriments['energy-kcal_value'] ?? null;
+            $proteins = $nutriments['proteins_100g'] ?? $nutriments['proteins'] ?? $nutriments['proteins_value'] ?? null;
+            $fats = $nutriments['fat_100g'] ?? $nutriments['fat'] ?? $nutriments['fat_value'] ?? null;
+            $carbohydrates = $nutriments['carbohydrates_100g'] ?? $nutriments['carbohydrates'] ?? $nutriments['carbohydrates_value'] ?? null;
+
+            $hasAllNutriments = $calories !== null
+                && $proteins !== null
+                && $fats !== null
+                && $carbohydrates !== null;
+
+            if ($hasAllNutriments) {
+                return new FoodInfoGatewayResponse(
+                    externalId: $currentProduct['id'],
+                    externalName: $name,
+                    calories: (int)$calories,
+                    proteins: (float)$proteins,
+                    fats: (float)$fats,
+                    carbohydrates: (float)$carbohydrates,
+                );
+            }
+        }
+
+        return null;
     }
 }
