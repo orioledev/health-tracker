@@ -220,7 +220,7 @@ abstract class BaseTelegramCommand extends AbstractCommand implements PublicComm
         if ($removeMenu) {
             $replyMarkup = new ReplyKeyboardRemove();
         } elseif ($showMenuButtons) {
-            $replyMarkup = $this->renderReplyKeyboard();
+            $replyMarkup = $this->renderMenuKeyboard();
         }
 
         $payload = new MessagePayload(
@@ -243,7 +243,7 @@ abstract class BaseTelegramCommand extends AbstractCommand implements PublicComm
         return $text;
     }
 
-    protected function renderReplyKeyboard(): ReplyKeyboardMarkup
+    protected function renderMenuKeyboard(): ReplyKeyboardMarkup
     {
         $keyboard = [
             [
@@ -252,6 +252,9 @@ abstract class BaseTelegramCommand extends AbstractCommand implements PublicComm
             ],
             [
                 TelegramCommand::ADD_WALK->getAlias(),
+                TelegramCommand::MEALS_BY_DAY->getAlias(),
+            ],
+            [
                 TelegramCommand::HELP->getAlias(),
             ],
         ];
