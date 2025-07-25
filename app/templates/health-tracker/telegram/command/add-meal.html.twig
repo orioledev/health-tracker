@@ -5,8 +5,8 @@
 📊  <strong>КБЖУ</strong>
 
 🔥  <i>Калории:</i> {{ meal.macronutrients.calories }} ккал
-🍗  <i>Белки:</i> {{ meal.macronutrients.proteins }} г
-🥑  <i>Жиры:</i> {{ meal.macronutrients.fats }} г
-🍞  <i>Углеводы:</i> {{ meal.macronutrients.carbohydrates }} г
+🥩  <i>Белки:</i> {{ meal.macronutrients.proteins }} г
+🥜  <i>Жиры:</i> {{ meal.macronutrients.fats }} г
+🥐  <i>Углеводы:</i> {{ meal.macronutrients.carbohydrates }} г
 
 {% include 'health-tracker/telegram/command/partials/macronutrients-by-day.html.twig' with {'title': 'КБЖУ за сегодня', 'dayMacronutrients': dayMacronutrients, 'dailyNormMacronutrients': dailyNormMacronutrients} %}
