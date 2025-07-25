@@ -1,4 +1,4 @@
-<strong>Приемы пищи за {{ date|date("d.m.Y") }}</strong>
+🍏 <strong>Приемы пищи за {{ date|date("d.m.Y") }}</strong>
 
 {% for meal in meals %}
 {{ loop.index }}. <strong>{{ meal.name }}, {{ meal.weight }} г</strong> (в {{ meal.createdAt|date("H:i") }})

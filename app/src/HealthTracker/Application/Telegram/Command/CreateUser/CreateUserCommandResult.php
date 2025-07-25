@@ -6,9 +6,8 @@ namespace App\HealthTracker\Application\Telegram\Command\CreateUser;
 
 use App\HealthTracker\Application\DTO\UserData;
 use App\HealthTracker\Domain\ValueObject\Shared\Macronutrients;
-use App\Shared\Application\Command\CommandInterface;
 
-final readonly class CreateUserCommandResult implements CommandInterface
+final readonly class CreateUserCommandResult
 {
     public function __construct(
         public UserData $userData,

@@ -154,23 +154,19 @@ final class MealsByDayTelegramCommand extends BaseTelegramCommand
 
         if ($prevDateWithMeals !== null) {
             $buttons[] = [
-                [
-                    'text' => '<< ' . $prevDateWithMeals->format('d.m.Y'),
-                    'callback_data' => TelegramCommand::MEALS_BY_DAY->value . '_' . $prevDateWithMeals->format('Y-m-d'),
-                ]
+                'text' => '<< ' . $prevDateWithMeals->format('d.m.Y'),
+                'callback_data' => TelegramCommand::MEALS_BY_DAY->value . '_' . $prevDateWithMeals->format('Y-m-d'),
             ];
         }
 
         if ($nextDateWithMeals !== null) {
             $buttons[] = [
-                [
-                    'text' => $nextDateWithMeals->format('d.m.Y') . ' >>',
-                    'callback_data' => TelegramCommand::MEALS_BY_DAY->value . '_' . $nextDateWithMeals->format('Y-m-d'),
-                ]
+                'text' => $nextDateWithMeals->format('d.m.Y') . ' >>',
+                'callback_data' => TelegramCommand::MEALS_BY_DAY->value . '_' . $nextDateWithMeals->format('Y-m-d'),
             ];
         }
 
-        return $buttons;
+        return [$buttons];
     }
 
     private function getPrevDateWithMeals(DateTimeInterface $date): ?DateTimeInterface

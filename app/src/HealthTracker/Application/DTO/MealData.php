@@ -6,7 +6,7 @@ namespace App\HealthTracker\Application\DTO;
 
 use App\HealthTracker\Domain\Entity\Meal;
 use App\HealthTracker\Domain\ValueObject\Shared\Macronutrients;
-use DateTimeInterface;
+use DateTimeImmutable;
 
 final readonly class MealData
 {
@@ -14,7 +14,7 @@ final readonly class MealData
         public string $name,
         public int $weight,
         public Macronutrients $macronutrients,
-        public DateTimeInterface $createdAt,
+        public DateTimeImmutable $createdAt,
     ) {}
 
     public static function fromEntity(Meal $meal): self

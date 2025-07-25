@@ -1,10 +1,10 @@
 {% set diffWithTargetCalories = dayMacronutrients.calories - dailyNormMacronutrients.calories %}
-📊  <strong>{{ title }}</strong>
+📊 <strong>{{ title }}</strong>
 
-🔥  <i>Калории:</i> {{ dayMacronutrients.calories }} / {{ dailyNormMacronutrients.calories }} ккал
-🥩  <i>Белки:</i> {{ dayMacronutrients.proteins }} / {{ dailyNormMacronutrients.proteins }} г
-🥜  <i>Жиры:</i> {{ dayMacronutrients.fats }} / {{ dailyNormMacronutrients.fats }} г
-🥐  <i>Углеводы:</i> {{ dayMacronutrients.carbohydrates }} / {{ dailyNormMacronutrients.carbohydrates }} г
+🔥 <i>Калории:</i> {{ dayMacronutrients.calories }} / {{ dailyNormMacronutrients.calories }} ккал
+🥩 <i>Белки:</i> {{ dayMacronutrients.proteins }} / {{ dailyNormMacronutrients.proteins }} г
+🥜 <i>Жиры:</i> {{ dayMacronutrients.fats }} / {{ dailyNormMacronutrients.fats }} г
+🥐 <i>Углеводы:</i> {{ dayMacronutrients.carbohydrates }} / {{ dailyNormMacronutrients.carbohydrates }} г
 
 {% if (diffWithTargetCalories < 0) %}
 До дневной нормы осталось <strong>{{ diffWithTargetCalories|abs }}</strong> ккал
