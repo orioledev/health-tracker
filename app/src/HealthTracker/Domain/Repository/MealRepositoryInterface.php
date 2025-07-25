@@ -8,10 +8,13 @@ use App\HealthTracker\Domain\Entity\Meal;
 use App\HealthTracker\Domain\Entity\User;
 use App\HealthTracker\Domain\ValueObject\Meal\MealId;
 use App\HealthTracker\Domain\ValueObject\Shared\Macronutrients;
+use DateTime;
 
 interface MealRepositoryInterface
 {
     public function findById(MealId $mealId): ?Meal;
+
+    public function getTotalMacronutrientsByDate(User $user, DateTime $date): Macronutrients;
 
     public function getTotalMacronutrientsToday(User $user): Macronutrients;
 

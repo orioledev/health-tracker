@@ -31,16 +31,17 @@ class MealDoctrineRepository extends ServiceEntityRepository implements MealRepo
 
     /**
      * @param User $user
+     * @param DateTime $date
      * @return Macronutrients
      * @throws DateMalformedStringException
      */
-    public function getTotalMacronutrientsToday(User $user): Macronutrients
+    public function getTotalMacronutrientsByDate(User $user, DateTime $date): Macronutrients
     {
-        $today = new DateTime();
-        $today->setTime(0, 0);
+        $startOfDay = clone $date;
+        $startOfDay->setTime(0, 0);
 
-        $tomorrow = clone $today;
-        $tomorrow->modify('+1 day');
+        $endOfDay = clone $startOfDay;
+        $endOfDay->modify('+1 day');
 
         $result = $this
             ->createQueryBuilder('m')
@@ -51,11 +52,11 @@ class MealDoctrineRepository extends ServiceEntityRepository implements MealRepo
                 'SUM(m.macronutrients.carbohydrates) as total_carbohydrates',
             )
             ->where('m.user = :user')
-            ->andWhere('m.createdAt >= :today')
-            ->andWhere('m.createdAt < :tomorrow')
+            ->andWhere('m.createdAt >= :startOfDay')
+            ->andWhere('m.createdAt < :endOfDay')
             ->setParameter('user', $user)
-            ->setParameter('today', $today)
-            ->setParameter('tomorrow', $tomorrow)
+            ->setParameter('startOfDay', $startOfDay)
+            ->setParameter('endOfDay', $endOfDay)
             ->getQuery()
             ->getSingleResult();
 
@@ -65,6 +66,16 @@ class MealDoctrineRepository extends ServiceEntityRepository implements MealRepo
             $result['total_fats'],
             $result['total_carbohydrates'],
         );
+    }
+
+    /**
+     * @param User $user
+     * @return Macronutrients
+     * @throws DateMalformedStringException
+     */
+    public function getTotalMacronutrientsToday(User $user): Macronutrients
+    {
+        return $this->getTotalMacronutrientsByDate($user, new DateTime());
     }
 
     public function save(Meal $meal): void

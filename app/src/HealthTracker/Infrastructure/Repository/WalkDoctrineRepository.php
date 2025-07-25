@@ -30,30 +30,41 @@ class WalkDoctrineRepository extends ServiceEntityRepository implements WalkRepo
 
     /**
      * @param User $user
+     * @param DateTime $date
      * @return int
      * @throws DateMalformedStringException
      */
-    public function getTotalStepsToday(User $user): int
+    public function getTotalStepsByDate(User $user, DateTime $date): int
     {
-        $today = new DateTime();
-        $today->setTime(0, 0);
+        $startOfDay = clone $date;
+        $startOfDay->setTime(0, 0);
 
-        $tomorrow = clone $today;
-        $tomorrow->modify('+1 day');
+        $endOfDay = clone $startOfDay;
+        $endOfDay->modify('+1 day');
 
         $result = $this
             ->createQueryBuilder('w')
             ->select('SUM(w.steps.value) as total_steps')
             ->where('w.user = :user')
-            ->andWhere('w.createdAt >= :today')
-            ->andWhere('w.createdAt < :tomorrow')
+            ->andWhere('w.createdAt >= :startOfDay')
+            ->andWhere('w.createdAt < :endOfDay')
             ->setParameter('user', $user)
-            ->setParameter('today', $today)
-            ->setParameter('tomorrow', $tomorrow)
+            ->setParameter('startOfDay', $startOfDay)
+            ->setParameter('endOfDay', $endOfDay)
             ->getQuery()
             ->getSingleScalarResult();
 
         return (int)($result ?? 0);
+    }
+
+    /**
+     * @param User $user
+     * @return int
+     * @throws DateMalformedStringException
+     */
+    public function getTotalStepsToday(User $user): int
+    {
+        return $this->getTotalStepsByDate($user, new DateTime());
     }
 
     public function save(Walk $walk): void
