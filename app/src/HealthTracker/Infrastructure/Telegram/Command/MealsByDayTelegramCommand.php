@@ -156,7 +156,7 @@ final class MealsByDayTelegramCommand extends BaseTelegramCommand
             $buttons[] = [
                 [
                     'text' => '<< ' . $prevDateWithMeals->format('d.m.Y'),
-                    'callback_data' => 'mealsByDayDate_' . $prevDateWithMeals->format('Y-m-d'),
+                    'callback_data' => TelegramCommand::MEALS_BY_DAY->value . '_' . $prevDateWithMeals->format('Y-m-d'),
                 ]
             ];
         }
@@ -165,7 +165,7 @@ final class MealsByDayTelegramCommand extends BaseTelegramCommand
             $buttons[] = [
                 [
                     'text' => $nextDateWithMeals->format('d.m.Y') . ' >>',
-                    'callback_data' => 'mealsByDayDate_' . $nextDateWithMeals->format('Y-m-d'),
+                    'callback_data' => TelegramCommand::MEALS_BY_DAY->value . '_' . $nextDateWithMeals->format('Y-m-d'),
                 ]
             ];
         }
