@@ -1,18 +1,18 @@
 {% set diffWithTarget = currentWeight - targetWeight %}
 {% set diffWithPrev = currentWeight - prevWeight %}
 
-Твой текущий вес: <strong>{{ currentWeight }}</strong> кг.
+⚖️ Твой текущий вес: <strong>{{ currentWeight }}</strong> кг
 
 Текущий индекс массы тела: <strong>{{ currentBmi }}</strong>
 
-По сравнению с прошлым взвешиванием твой вес {% if diffWithPrev == 0 %} не изменился. {% else %} {{ diffWithPrev > 0 ? 'увеличился' : 'уменьшился' }} на <strong>{{ diffWithPrev|abs }}</strong> кг.{% endif %}
+По сравнению с прошлым взвешиванием твой вес {% if diffWithPrev == 0 %} не изменился. {% else %} {{ diffWithPrev > 0 ? 'увеличился' : 'уменьшился' }} на <strong>{{ diffWithPrev|abs|round(2) }}</strong> кг{% endif %}
 
 
-Изначально вес был <strong>{{ initialWeight }}</strong> кг, а стремишься ты к <strong>{{ targetWeight }}</strong> кг.
+Изначально вес был <strong>{{ initialWeight }}</strong> кг, а стремишься ты к <strong>{{ targetWeight }}</strong> кг
 
 {% if (weightTargetType == enum('App\\HealthTracker\\Domain\\Enum\\WeightTargetType').LOSS and diffWithTarget <= 0)
     or (weightTargetType == enum('App\\HealthTracker\\Domain\\Enum\\WeightTargetType').GAIN and diffWithTarget >= 0) %}
-Цель достигнута! Поздравляю!
+🏆 Цель достигнута! Поздравляю!
 {% else %}
-До цели осталось {{ diffWithTarget < 0 ? 'набрать' : 'сбросить' }} <strong>{{ diffWithTarget|abs }}</strong> кг.
+До цели осталось {{ diffWithTarget < 0 ? 'набрать' : 'сбросить' }} <strong>{{ diffWithTarget|abs|round(2) }}</strong> кг
 {% endif %}
