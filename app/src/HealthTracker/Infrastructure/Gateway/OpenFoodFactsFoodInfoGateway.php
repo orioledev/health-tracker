@@ -9,7 +9,7 @@ use App\HealthTracker\Application\Gateway\FoodInfo\FoodInfoGatewayRequest;
 use App\HealthTracker\Application\Gateway\FoodInfo\FoodInfoGatewayResponse;
 use App\Shared\Application\HttpClient\HttpClientInterface;
 
-final readonly class FoodInfoGateway implements FoodInfoGatewayInterface
+final readonly class OpenFoodFactsFoodInfoGateway implements FoodInfoGatewayInterface
 {
     public function __construct(
         private HttpClientInterface $httpClient,
