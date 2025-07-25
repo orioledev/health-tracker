@@ -15,7 +15,7 @@ use TelegramBot\Api\InvalidArgumentException;
 use TelegramBot\Api\Types\Update;
 use Twig\Environment;
 
-final class HelpTelegramCommand extends BaseTelegramCommand implements PublicCommandInterface
+final class HelpTelegramCommand extends BaseTelegramCommand
 {
     public function __construct(
         Environment $twig,

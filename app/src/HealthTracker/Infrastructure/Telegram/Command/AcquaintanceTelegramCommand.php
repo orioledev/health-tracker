@@ -20,7 +20,6 @@ use App\HealthTracker\Infrastructure\Telegram\Handler\MultipleStepHandlerDataInt
 use App\HealthTracker\Infrastructure\Telegram\Message\MessagePayload;
 use App\Shared\Application\Bus\CommandBusInterface;
 use App\Shared\Application\Bus\QueryBusInterface;
-use BoShurik\TelegramBotBundle\Telegram\Command\PublicCommandInterface;
 use DateMalformedStringException;
 use DateTimeImmutable;
 use TelegramBot\Api\BotApi;
@@ -31,7 +30,7 @@ use TelegramBot\Api\Types\Update;
 use Twig\Environment;
 use ValueError;
 
-final class AcquaintanceTelegramCommand extends BaseMultipleStepTelegramCommand implements PublicCommandInterface
+final class AcquaintanceTelegramCommand extends BaseMultipleStepTelegramCommand
 {
     public function __construct(
         Environment $twig,
