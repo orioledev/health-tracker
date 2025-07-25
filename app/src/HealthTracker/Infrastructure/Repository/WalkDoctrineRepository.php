@@ -10,6 +10,7 @@ use App\HealthTracker\Domain\Repository\WalkRepositoryInterface;
 use App\HealthTracker\Domain\ValueObject\Walk\WalkId;
 use DateMalformedStringException;
 use DateTime;
+use DateTimeInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -30,13 +31,13 @@ class WalkDoctrineRepository extends ServiceEntityRepository implements WalkRepo
 
     /**
      * @param User $user
-     * @param DateTime $date
+     * @param DateTimeInterface $date
      * @return int
      * @throws DateMalformedStringException
      */
-    public function getTotalStepsByDate(User $user, DateTime $date): int
+    public function getTotalStepsByDate(User $user, DateTimeInterface $date): int
     {
-        $startOfDay = clone $date;
+        $startOfDay = DateTime::createFromInterface($date);
         $startOfDay->setTime(0, 0);
 
         $endOfDay = clone $startOfDay;
