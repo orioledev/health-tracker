@@ -214,11 +214,7 @@ abstract class BaseTelegramCommand extends AbstractCommand implements PublicComm
         bool $removeMenu = false,
     ): void
     {
-        try {
-            $text = $this->twig->render($template, $templateContext);
-        } catch (Throwable $e) {
-            $text = $e->getMessage();
-        }
+        $text = $this->renderTemplate($template, $templateContext);
 
         $replyMarkup = null;
         if ($removeMenu) {
@@ -234,6 +230,17 @@ abstract class BaseTelegramCommand extends AbstractCommand implements PublicComm
         );
 
         $this->sendApiMessage($api, $payload);
+    }
+
+    protected function renderTemplate($template, $templateContext): string
+    {
+        try {
+            $text = $this->twig->render($template, $templateContext);
+        } catch (Throwable $e) {
+            $text = $e->getMessage();
+        }
+
+        return $text;
     }
 
     protected function renderReplyKeyboard(): ReplyKeyboardMarkup
