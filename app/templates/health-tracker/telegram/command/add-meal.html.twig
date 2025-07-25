@@ -1,17 +1,12 @@
 <strong>Добавлен прием пищи</strong>
 
-{{ name }}, {{ weight }} г
+{{ meal.name }}, {{ meal.weight }} г
 
-<strong>КБЖУ</strong>
+📊  <strong>КБЖУ</strong>
 
-<i>Калории:</i> {{ currentMacronutrients.calories }} ккал
-<i>Белки:</i> {{ currentMacronutrients.proteins }} г
-<i>Жиры:</i> {{ currentMacronutrients.fats }} г
-<i>Углеводы:</i> {{ currentMacronutrients.carbohydrates }} г
+🔥  <i>Калории:</i> {{ meal.macronutrients.calories }} ккал
+🥩  <i>Белки:</i> {{ meal.macronutrients.proteins }} г
+🥜  <i>Жиры:</i> {{ meal.macronutrients.fats }} г
+🥐  <i>Углеводы:</i> {{ meal.macronutrients.carbohydrates }} г
 
-<strong>КБЖУ за сегодня</strong>
-
-<i>Калории:</i> {{ todayMacronutrients.calories }} / {{ dailyNormMacronutrients.calories }} ккал
-<i>Белки:</i> {{ todayMacronutrients.proteins }} / {{ dailyNormMacronutrients.proteins }} г
-<i>Жиры:</i> {{ todayMacronutrients.fats }} / {{ dailyNormMacronutrients.fats }} г
-<i>Углеводы:</i> {{ todayMacronutrients.carbohydrates }} / {{ dailyNormMacronutrients.carbohydrates }} г
+{% include 'health-tracker/telegram/command/partials/macronutrients-by-day.html.twig' with {'title': 'КБЖУ за сегодня', 'dayMacronutrients': dayMacronutrients, 'dailyNormMacronutrients': dailyNormMacronutrients} %}

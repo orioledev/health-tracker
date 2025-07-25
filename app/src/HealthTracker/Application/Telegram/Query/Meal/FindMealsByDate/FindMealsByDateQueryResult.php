@@ -2,15 +2,16 @@
 
 declare(strict_types=1);
 
-namespace App\HealthTracker\Application\Telegram\Command\AddMeal;
+namespace App\HealthTracker\Application\Telegram\Query\Meal\FindMealsByDate;
 
-use App\HealthTracker\Application\DTO\MealData;
 use App\HealthTracker\Domain\ValueObject\Shared\Macronutrients;
+use DateTimeInterface;
 
-final readonly class AddMealCommandResult
+final readonly class FindMealsByDateQueryResult
 {
     public function __construct(
-        public MealData $meal,
+        public DateTimeInterface $date,
+        public array $meals,
         public Macronutrients $dayMacronutrients,
         public Macronutrients $dailyNormMacronutrients,
     ) {}
@@ -18,7 +19,8 @@ final readonly class AddMealCommandResult
     public function toArray(): array
     {
         return [
-            'meal' => $this->meal->toArray(),
+            'date' => $this->date,
+            'meals' => $this->meals,
             'dayMacronutrients' => $this->dayMacronutrients->toArray(),
             'dailyNormMacronutrients' => $this->dailyNormMacronutrients->toArray(),
         ];

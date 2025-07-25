@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\HealthTracker\Application\Telegram\Command\AddMeal;
 
+use App\HealthTracker\Application\DTO\MealData;
 use App\HealthTracker\Application\Gateway\FoodInfo\FoodInfoGatewayInterface;
 use App\HealthTracker\Application\Gateway\FoodInfo\FoodInfoGatewayRequest;
 use App\HealthTracker\Application\Gateway\FoodInfo\FoodInfoGatewayResponse;
@@ -65,10 +66,8 @@ final readonly class AddMealCommandHandler implements CommandHandlerInterface
         $this->mealRepository->save($meal);
 
         return new AddMealCommandResult(
-            name: $meal->name->value(),
-            weight: $meal->weight->value(),
-            currentMacronutrients: $meal->macronutrients,
-            todayMacronutrients: $this->mealRepository->getTotalMacronutrientsToday($user),
+            meal: MealData::fromEntity($meal),
+            dayMacronutrients: $this->mealRepository->getTotalMacronutrientsToday($user),
             dailyNormMacronutrients: $user->dailyNorm->macronutrients,
         );
     }
