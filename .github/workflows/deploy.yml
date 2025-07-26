@@ -2,7 +2,7 @@ name: Deploy to Production
 
 on:
     push:
-        branches: [ master, deploy-test, 'feat/skip-weight-target-type-step' ]
+        branches: [ master, deploy-test ]
 jobs:
     deploy:
         runs-on: ubuntu-latest
