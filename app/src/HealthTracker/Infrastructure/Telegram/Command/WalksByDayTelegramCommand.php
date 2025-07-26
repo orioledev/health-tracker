@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\HealthTracker\Infrastructure\Telegram\Command;
 
-use App\HealthTracker\Application\Telegram\Query\Meal\FindMealsByDate\FindMealsByDateQuery;
-use App\HealthTracker\Application\Telegram\Query\Meal\FindMealsByDate\FindMealsByDateQueryResult;
-use App\HealthTracker\Application\Telegram\Query\Meal\GetDateWithMeals\GetDateWithMealsQuery;
+use App\HealthTracker\Application\Telegram\Query\Walk\FindWalksByDate\FindWalksByDateQuery;
+use App\HealthTracker\Application\Telegram\Query\Walk\FindWalksByDate\FindWalksByDateQueryResult;
+use App\HealthTracker\Application\Telegram\Query\Walk\GetDateWithWalks\GetDateWithWalksQuery;
 use App\HealthTracker\Domain\Enum\Direction;
 use App\HealthTracker\Infrastructure\Telegram\Enum\TelegramCommand;
 use App\HealthTracker\Infrastructure\Telegram\Message\MessagePayload;
@@ -19,28 +19,28 @@ use TelegramBot\Api\InvalidArgumentException;
 use TelegramBot\Api\Types\Inline\InlineKeyboardMarkup;
 use TelegramBot\Api\Types\Update;
 
-final class MealsByDayTelegramCommand extends BaseTelegramCommand
+final class WalksByDayTelegramCommand extends BaseTelegramCommand
 {
     public function getName(): string
     {
-        return TelegramCommand::MEALS_BY_DAY->value;
+        return TelegramCommand::WALKS_BY_DAY->value;
     }
 
     public function getAliases(): array
     {
         return [
-            TelegramCommand::MEALS_BY_DAY->getAlias(),
+            TelegramCommand::WALKS_BY_DAY->getAlias(),
         ];
     }
 
     public function getDescription(): string
     {
-        return TelegramCommand::MEALS_BY_DAY->getDescription();
+        return TelegramCommand::WALKS_BY_DAY->getDescription();
     }
 
     public function getSortOrder(): int
     {
-        return 500;
+        return 600;
     }
 
     /**
@@ -63,9 +63,9 @@ final class MealsByDayTelegramCommand extends BaseTelegramCommand
 
         $messageId = $update->getCallbackQuery()?->getMessage()->getMessageId();
 
-        /** @var FindMealsByDateQueryResult $result */
+        /** @var FindWalksByDateQueryResult $result */
         $result = $this->queryBus->ask(
-            new FindMealsByDateQuery(
+            new FindWalksByDateQuery(
                 telegramUserId: $this->telegramUser->getId(),
                 date: $date,
             ),
@@ -116,7 +116,7 @@ final class MealsByDayTelegramCommand extends BaseTelegramCommand
      */
     private function getDate(Update $update): ?DateTimeInterface
     {
-        $regexp = '#' . TelegramCommand::MEALS_BY_DAY->value . '_(\d{4}-\d{2}-\d{2})#';
+        $regexp = '#' . TelegramCommand::WALKS_BY_DAY->value . '_(\d{4}-\d{2}-\d{2})#';
 
         if ($update->getMessage() && preg_match($regexp, $update->getMessage()->getText(), $matches)) {
             return new DateTimeImmutable($matches[1]);
@@ -131,37 +131,37 @@ final class MealsByDayTelegramCommand extends BaseTelegramCommand
 
     protected function getSuccessMessageTemplate(): string
     {
-        return 'health-tracker/telegram/command/meals-by-day.html.twig';
+        return 'health-tracker/telegram/command/walks-by-day.html.twig';
     }
 
     private function getButtons(DateTimeInterface $date): array
     {
         $buttons = [];
 
-        $prevDateWithMeals = $this->getPrevDateWithMeals($date);
-        $nextDateWithMeals = $this->getNextDateWithMeals($date);
+        $prevDateWithWalks = $this->getPrevDateWithWalks($date);
+        $nextDateWithWalks = $this->getNextDateWithWalks($date);
 
-        if ($prevDateWithMeals !== null) {
+        if ($prevDateWithWalks !== null) {
             $buttons[] = [
-                'text' => '<< ' . $prevDateWithMeals->format('d.m.Y'),
-                'callback_data' => TelegramCommand::MEALS_BY_DAY->value . '_' . $prevDateWithMeals->format('Y-m-d'),
+                'text' => '<< ' . $prevDateWithWalks->format('d.m.Y'),
+                'callback_data' => TelegramCommand::WALKS_BY_DAY->value . '_' . $prevDateWithWalks->format('Y-m-d'),
             ];
         }
 
-        if ($nextDateWithMeals !== null) {
+        if ($nextDateWithWalks !== null) {
             $buttons[] = [
-                'text' => $nextDateWithMeals->format('d.m.Y') . ' >>',
-                'callback_data' => TelegramCommand::MEALS_BY_DAY->value . '_' . $nextDateWithMeals->format('Y-m-d'),
+                'text' => $nextDateWithWalks->format('d.m.Y') . ' >>',
+                'callback_data' => TelegramCommand::WALKS_BY_DAY->value . '_' . $nextDateWithWalks->format('Y-m-d'),
             ];
         }
 
         return [$buttons];
     }
 
-    private function getPrevDateWithMeals(DateTimeInterface $date): ?DateTimeInterface
+    private function getPrevDateWithWalks(DateTimeInterface $date): ?DateTimeInterface
     {
         return $this->queryBus->ask(
-            new GetDateWithMealsQuery(
+            new GetDateWithWalksQuery(
                 telegramUserId: $this->telegramUser->getId(),
                 date: $date,
                 direction: Direction::PREV
@@ -169,10 +169,10 @@ final class MealsByDayTelegramCommand extends BaseTelegramCommand
         );
     }
 
-    private function getNextDateWithMeals(DateTimeInterface $date): ?DateTimeInterface
+    private function getNextDateWithWalks(DateTimeInterface $date): ?DateTimeInterface
     {
         return $this->queryBus->ask(
-            new GetDateWithMealsQuery(
+            new GetDateWithWalksQuery(
                 telegramUserId: $this->telegramUser->getId(),
                 date: $date,
                 direction: Direction::NEXT

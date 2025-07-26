@@ -1,5 +1,6 @@
 🍏 <strong>Приемы пищи за {{ date|date("d.m.Y") }}</strong>
 
+{% if (meals) %}
 {% for meal in meals %}
 {{ loop.index }}. <strong>{{ meal.name }}, {{ meal.weight }} г</strong> (в {{ meal.createdAt|date("H:i") }})
 {{ meal.macronutrients.calories }} ккал, Белки {{ meal.macronutrients.proteins }} г, Жиры {{ meal.macronutrients.fats }} г, Углеводы {{ meal.macronutrients.carbohydrates }} г
@@ -7,3 +8,6 @@
 {% endfor %}
 
 {% include 'health-tracker/telegram/command/partials/macronutrients-by-day.html.twig' with {'title': 'КБЖУ за ' ~ date|date("d.m.Y"), 'dayMacronutrients': dayMacronutrients, 'dailyNormMacronutrients': dailyNormMacronutrients} %}
+{% else %}
+В этот день приемов пищи не найдено.
+{% endif %}

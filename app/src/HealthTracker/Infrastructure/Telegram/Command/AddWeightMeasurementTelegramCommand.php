@@ -47,7 +47,7 @@ final class AddWeightMeasurementTelegramCommand extends BaseMultipleStepTelegram
 
     public function getDescription(): string
     {
-        return 'Добавление нового взвешивания';
+        return TelegramCommand::ADD_WEIGHT_MEASUREMENT->getDescription();
     }
 
     public function getSortOrder(): int

@@ -25,12 +25,6 @@ services:
             $config:
                 timeout: 30
 
-    App\HealthTracker\Infrastructure\Telegram\Command\HelpTelegramCommand:
-        arguments:
-            $commandRegistry: '@boshurik_telegram_bot.command.registry.default'
-        tags:
-            - { name: boshurik_telegram_bot.command, priority: -1024 }
-
     _instanceof:
         App\Shared\Application\Command\CommandHandlerInterface:
             tags:

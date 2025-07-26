@@ -47,7 +47,7 @@ final class AddWalkTelegramCommand extends BaseMultipleStepTelegramCommand
 
     public function getDescription(): string
     {
-        return 'Добавление прогулки (шагов)';
+        return TelegramCommand::ADD_WALK->getDescription();
     }
 
     public function getSortOrder(): int
