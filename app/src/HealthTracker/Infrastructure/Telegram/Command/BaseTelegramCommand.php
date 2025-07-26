@@ -255,6 +255,7 @@ abstract class BaseTelegramCommand extends AbstractCommand implements PublicComm
                 TelegramCommand::MEALS_BY_DAY->getAlias(),
             ],
             [
+                TelegramCommand::WALKS_BY_DAY->getAlias(),
                 TelegramCommand::HELP->getAlias(),
             ],
         ];

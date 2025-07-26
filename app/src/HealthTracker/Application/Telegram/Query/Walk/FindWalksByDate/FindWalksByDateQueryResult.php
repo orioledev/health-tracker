@@ -2,14 +2,15 @@
 
 declare(strict_types=1);
 
-namespace App\HealthTracker\Application\Telegram\Command\AddWalk;
+namespace App\HealthTracker\Application\Telegram\Query\Walk\FindWalksByDate;
 
-use App\HealthTracker\Application\DTO\WalkData;
+use DateTimeInterface;
 
-final readonly class AddWalkCommandResult
+final readonly class FindWalksByDateQueryResult
 {
     public function __construct(
-        public WalkData $walk,
+        public DateTimeInterface $date,
+        public array $walks,
         public int $daySteps,
         public int $dailyNormSteps,
     ) {}
@@ -17,7 +18,8 @@ final readonly class AddWalkCommandResult
     public function toArray(): array
     {
         return [
-            'walk' => $this->walk,
+            'date' => $this->date,
+            'walks' => $this->walks,
             'daySteps' => $this->daySteps,
             'dailyNormSteps' => $this->dailyNormSteps,
         ];

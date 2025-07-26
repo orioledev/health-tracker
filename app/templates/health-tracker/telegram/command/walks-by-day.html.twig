@@ -1,0 +1,11 @@
+🚶‍♂️‍➡️ <strong>Прогулки за {{ date|date("d.m.Y") }}</strong>
+
+{% if (walks) %}
+{% for walk in walks %}
+{{ loop.index }}. <strong>{{ walk.steps }}</strong> шагов, потрачено <strong>{{ walk.calories }}</strong> ккал (в {{ walk.createdAt|date("H:i") }})
+
+{% endfor %}
+За день ты прошёл <strong>{{ daySteps }}</strong> из <strong>{{ dailyNormSteps }}</strong> шагов.
+{% else %}
+В этот день прогулок не найдено.
+{% endif %}

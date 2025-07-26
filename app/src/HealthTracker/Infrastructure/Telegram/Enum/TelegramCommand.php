@@ -12,6 +12,7 @@ enum TelegramCommand: string
     case ADD_MEAL = '/addmeal';
     case ADD_WALK = '/addwalk';
     case MEALS_BY_DAY = '/mealsbyday';
+    case WALKS_BY_DAY = '/walksbyday';
 
     public function getAlias(): string
     {
@@ -22,6 +23,7 @@ enum TelegramCommand: string
             self::ADD_MEAL => 'Добавить прием пищи',
             self::ADD_WALK => 'Добавить прогулку',
             self::MEALS_BY_DAY => 'Показать приемы пищи за день',
+            self::WALKS_BY_DAY => 'Показать прогулки за день',
         };
     }
 }
