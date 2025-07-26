@@ -15,6 +15,11 @@ interface MealRepositoryInterface
 {
     public function findById(MealId $mealId): ?Meal;
 
+    /**
+     * @param User $user
+     * @param DateTimeInterface $date
+     * @return Meal[]
+     */
     public function findMealsByDate(User $user, DateTimeInterface $date): array;
 
     public function getTotalMacronutrientsByDate(User $user, DateTimeInterface $date): Macronutrients;
