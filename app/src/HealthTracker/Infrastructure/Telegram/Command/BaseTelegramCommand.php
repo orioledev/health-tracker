@@ -15,7 +15,6 @@ use TelegramBot\Api\Exception;
 use TelegramBot\Api\InvalidArgumentException;
 use TelegramBot\Api\Types\Message;
 use TelegramBot\Api\Types\ReplyKeyboardMarkup;
-use TelegramBot\Api\Types\ReplyKeyboardRemove;
 use TelegramBot\Api\Types\Update;
 use TelegramBot\Api\Types\User;
 use Throwable;
@@ -200,7 +199,6 @@ abstract class BaseTelegramCommand extends AbstractCommand implements PublicComm
      * @param string $template
      * @param array $templateContext
      * @param bool $showMenuButtons
-     * @param bool $removeMenu
      * @return void
      * @throws Exception
      * @throws InvalidArgumentException
@@ -211,17 +209,13 @@ abstract class BaseTelegramCommand extends AbstractCommand implements PublicComm
         string $template,
         array $templateContext = [],
         bool $showMenuButtons = false,
-        bool $removeMenu = false,
     ): void
     {
         $text = $this->renderTemplate($template, $templateContext);
 
-        $replyMarkup = null;
-        if ($removeMenu) {
-            $replyMarkup = new ReplyKeyboardRemove();
-        } elseif ($showMenuButtons) {
-            $replyMarkup = $this->renderMenuKeyboard();
-        }
+        $replyMarkup = $showMenuButtons
+            ? $this->renderMenuKeyboard()
+            : null;
 
         $payload = new MessagePayload(
             chatId: $chatId,

@@ -45,7 +45,7 @@ final class MealsByDayTelegramCommand extends BaseTelegramCommand
 
     public function getDescription(): string
     {
-        return 'Показывает историю приемов пищи за день';
+        return TelegramCommand::MEALS_BY_DAY->getDescription();
     }
 
     public function getSortOrder(): int
@@ -67,7 +67,6 @@ final class MealsByDayTelegramCommand extends BaseTelegramCommand
 
         $message = $this->telegramMessage;
         $chatId = (string)$message?->getChat()->getId();
-        $messageId = null;
 
         $date = $this->getDate($update);
         $date = $date ?: new DateTimeImmutable();

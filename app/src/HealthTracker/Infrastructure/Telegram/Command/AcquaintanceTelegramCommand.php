@@ -56,7 +56,7 @@ final class AcquaintanceTelegramCommand extends BaseMultipleStepTelegramCommand
 
     public function getDescription(): string
     {
-        return 'Знакомство с пользователем';
+        return TelegramCommand::START->getDescription();
     }
 
     public function getSortOrder(): int
@@ -158,8 +158,6 @@ final class AcquaintanceTelegramCommand extends BaseMultipleStepTelegramCommand
                     'lastName' => $telegramUser->getLastName(),
                 ],
             ],
-            false,
-            true
         );
 
         // Gender buttons

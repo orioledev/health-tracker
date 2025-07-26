@@ -45,7 +45,7 @@ final class WalksByDayTelegramCommand extends BaseTelegramCommand
 
     public function getDescription(): string
     {
-        return 'Показывает историю прогулок за день';
+        return TelegramCommand::WALKS_BY_DAY->getDescription();
     }
 
     public function getSortOrder(): int

@@ -46,7 +46,7 @@ final class AddMealTelegramCommand extends BaseMultipleStepTelegramCommand
 
     public function getDescription(): string
     {
-        return 'Добавление нового приема пищи';
+        return TelegramCommand::ADD_MEAL->getDescription();
     }
 
     public function getSortOrder(): int
