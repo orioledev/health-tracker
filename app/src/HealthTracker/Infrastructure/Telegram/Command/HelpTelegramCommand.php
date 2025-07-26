@@ -5,23 +5,13 @@ declare(strict_types=1);
 namespace App\HealthTracker\Infrastructure\Telegram\Command;
 
 use App\HealthTracker\Infrastructure\Telegram\Enum\TelegramCommand;
-use App\Shared\Application\Bus\QueryBusInterface;
 use TelegramBot\Api\BotApi;
 use TelegramBot\Api\Exception;
 use TelegramBot\Api\InvalidArgumentException;
 use TelegramBot\Api\Types\Update;
-use Twig\Environment;
 
 final class HelpTelegramCommand extends BaseTelegramCommand
 {
-    public function __construct(
-        Environment $twig,
-        QueryBusInterface $queryBus,
-    )
-    {
-        parent::__construct($twig, $queryBus);
-    }
-
     public function getName(): string
     {
         return TelegramCommand::HELP->value;

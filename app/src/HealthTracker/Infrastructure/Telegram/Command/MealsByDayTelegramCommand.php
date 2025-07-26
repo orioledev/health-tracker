@@ -10,7 +10,6 @@ use App\HealthTracker\Application\Telegram\Query\Meal\GetDateWithMeals\GetDateWi
 use App\HealthTracker\Domain\Enum\Direction;
 use App\HealthTracker\Infrastructure\Telegram\Enum\TelegramCommand;
 use App\HealthTracker\Infrastructure\Telegram\Message\MessagePayload;
-use App\Shared\Application\Bus\QueryBusInterface;
 use DateMalformedStringException;
 use DateTimeImmutable;
 use DateTimeInterface;
@@ -19,18 +18,9 @@ use TelegramBot\Api\Exception;
 use TelegramBot\Api\InvalidArgumentException;
 use TelegramBot\Api\Types\Inline\InlineKeyboardMarkup;
 use TelegramBot\Api\Types\Update;
-use Twig\Environment;
 
 final class MealsByDayTelegramCommand extends BaseTelegramCommand
 {
-    public function __construct(
-        Environment       $twig,
-        QueryBusInterface $queryBus,
-    )
-    {
-        parent::__construct($twig, $queryBus);
-    }
-
     public function getName(): string
     {
         return TelegramCommand::MEALS_BY_DAY->value;
