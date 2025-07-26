@@ -12,7 +12,7 @@ abstract readonly class AbstractPositiveIntValueObject extends AbstractValueObje
     protected int $value;
 
     /**
-     * @param int $value
+     * @param string|int $value
      * @throws InvalidArgumentException
      */
     public function __construct(string|int $value)
@@ -66,6 +66,4 @@ abstract readonly class AbstractPositiveIntValueObject extends AbstractValueObje
             throw new InvalidArgumentException("Некорректный формат числа: $value");
         }
     }
-
-
 }

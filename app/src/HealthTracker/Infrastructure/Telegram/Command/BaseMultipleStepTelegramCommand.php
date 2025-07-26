@@ -8,6 +8,7 @@ use App\HealthTracker\Infrastructure\Exception\InvalidParameterException;
 use App\HealthTracker\Infrastructure\Exception\NeedAcquaintanceException;
 use App\HealthTracker\Infrastructure\Telegram\Handler\BaseMultipleStepHandler;
 use App\HealthTracker\Infrastructure\Telegram\Handler\MultipleStepHandlerDataInterface;
+use App\Shared\Application\Bus\QueryBusInterface;
 use BadMethodCallException;
 use TelegramBot\Api\BotApi;
 use TelegramBot\Api\Exception;
@@ -20,10 +21,11 @@ abstract class BaseMultipleStepTelegramCommand extends BaseTelegramCommand
 {
     public function __construct(
         Environment $twig,
+        QueryBusInterface $queryBus,
         protected readonly BaseMultipleStepHandler $handler,
     )
     {
-        parent::__construct($twig);
+        parent::__construct($twig, $queryBus);
     }
 
     abstract protected function finalStep(
@@ -42,11 +44,13 @@ abstract class BaseMultipleStepTelegramCommand extends BaseTelegramCommand
      */
     public function execute(BotApi $api, Update $update): void
     {
-        $message = $this->getTelegramMessage($update);
+        parent::execute($api, $update);
+
+        $message = $this->telegramMessage;
         $chatId = (string)$message?->getChat()->getId();
 
         try {
-            $this->beforeExecute($update);
+            $this->beforeExecute($api, $update);
 
             if (parent::isApplicable($update)) {
                 $step = 0;
@@ -108,25 +112,10 @@ abstract class BaseMultipleStepTelegramCommand extends BaseTelegramCommand
         return $this->handler->hasData((string)$chatId);
     }
 
-    protected function beforeExecute(Update $update): void {}
+    protected function beforeExecute(BotApi $api, Update $update): void {}
 
     protected function createData(Update $update): MultipleStepHandlerDataInterface
     {
         return $this->handler->createData();
-    }
-
-    protected function getEnumValue(Update $update): ?string
-    {
-        $regexp = '/[a-zA-Z_]+_(\d+)/';
-
-        if ($update->getMessage() && preg_match($regexp, $update->getMessage()->getText(), $matches)) {
-            return $matches[1];
-        }
-
-        if ($update->getCallbackQuery() && preg_match($regexp, $update->getCallbackQuery()->getData(), $matches)) {
-            return $matches[1];
-        }
-
-        return null;
     }
 }

@@ -6,7 +6,6 @@ namespace App\HealthTracker\Infrastructure\Telegram\Command;
 
 use App\HealthTracker\Application\Telegram\Command\AddWeightMeasurement\AddWeightMeasurementCommand;
 use App\HealthTracker\Application\Telegram\Command\AddWeightMeasurement\AddWeightMeasurementCommandResult;
-use App\HealthTracker\Application\Telegram\Query\CheckUserExistenceByTelegramUserId\CheckUserExistenceByTelegramUserIdQuery;
 use App\HealthTracker\Domain\ValueObject\Shared\Weight;
 use App\HealthTracker\Infrastructure\Exception\InvalidParameterException;
 use App\HealthTracker\Infrastructure\Exception\NeedAcquaintanceException;
@@ -26,12 +25,12 @@ final class AddWeightMeasurementTelegramCommand extends BaseMultipleStepTelegram
 {
     public function __construct(
         Environment $twig,
+        QueryBusInterface $queryBus,
         AddWeightMeasurementHandler $handler,
-        private readonly QueryBusInterface $queryBus,
         private readonly CommandBusInterface $commandBus,
     )
     {
-        parent::__construct($twig, $handler);
+        parent::__construct($twig, $queryBus, $handler);
     }
 
     public function getName(): string
@@ -57,19 +56,14 @@ final class AddWeightMeasurementTelegramCommand extends BaseMultipleStepTelegram
     }
 
     /**
+     * @param BotApi $api
      * @param Update $update
      * @return void
      * @throws NeedAcquaintanceException
      */
-    protected function beforeExecute(Update $update): void
+    protected function beforeExecute(BotApi $api, Update $update): void
     {
-        $telegramUser = $this->getTelegramUser($update);
-
-        $isUserExists = $this->queryBus->ask(
-            new CheckUserExistenceByTelegramUserIdQuery($telegramUser?->getId())
-        );
-
-        if (!$isUserExists) {
+        if (!$this->isUserExists) {
             throw new NeedAcquaintanceException();
         }
     }
@@ -107,15 +101,9 @@ final class AddWeightMeasurementTelegramCommand extends BaseMultipleStepTelegram
             throw new \InvalidArgumentException('Переданы некорректные данные');
         }
 
-        $telegramUser = $this->getTelegramUser($update);
-
-        if (!$telegramUser) {
-            throw new \InvalidArgumentException('Не удалось определить пользователя telegram');
-        }
-
         /** @var AddWeightMeasurementData $data */
         $command = new AddWeightMeasurementCommand(
-            telegramUserId: $telegramUser->getId(),
+            telegramUserId: $this->telegramUser->getId(),
             weight: $data->weight,
         );
 
@@ -153,10 +141,8 @@ final class AddWeightMeasurementTelegramCommand extends BaseMultipleStepTelegram
      */
     protected function step1(BotApi $api, Update $update, string $chatId, AddWeightMeasurementData $data): void
     {
-        $message = $update->getMessage();
-
         try {
-            $weight = new Weight($message->getText());
+            $weight = new Weight($update->getMessage()?->getText());
             $data->weight = $weight->value();
         } catch (\InvalidArgumentException $e) {
             $errorMessage = sprintf('Введен некорректный вес (%s)', $e->getMessage());

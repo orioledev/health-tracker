@@ -6,7 +6,6 @@ namespace App\HealthTracker\Infrastructure\Telegram\Command;
 
 use App\HealthTracker\Application\Telegram\Command\AddMeal\AddMealCommand;
 use App\HealthTracker\Application\Telegram\Command\AddMeal\AddMealCommandResult;
-use App\HealthTracker\Application\Telegram\Query\CheckUserExistenceByTelegramUserId\CheckUserExistenceByTelegramUserIdQuery;
 use App\HealthTracker\Infrastructure\Exception\InvalidParameterException;
 use App\HealthTracker\Infrastructure\Exception\NeedAcquaintanceException;
 use App\HealthTracker\Infrastructure\Telegram\DTO\AddMealData;
@@ -25,12 +24,12 @@ final class AddMealTelegramCommand extends BaseMultipleStepTelegramCommand
 {
     public function __construct(
         Environment $twig,
+        QueryBusInterface $queryBus,
         AddMealHandler $handler,
-        private readonly QueryBusInterface $queryBus,
         private readonly CommandBusInterface $commandBus,
     )
     {
-        parent::__construct($twig, $handler);
+        parent::__construct($twig, $queryBus, $handler);
     }
 
     public function getName(): string
@@ -56,19 +55,14 @@ final class AddMealTelegramCommand extends BaseMultipleStepTelegramCommand
     }
 
     /**
+     * @param BotApi $api
      * @param Update $update
      * @return void
      * @throws NeedAcquaintanceException
      */
-    protected function beforeExecute(Update $update): void
+    protected function beforeExecute(BotApi $api, Update $update): void
     {
-        $telegramUser = $this->getTelegramUser($update);
-
-        $isUserExists = $this->queryBus->ask(
-            new CheckUserExistenceByTelegramUserIdQuery($telegramUser?->getId())
-        );
-
-        if (!$isUserExists) {
+        if (!$this->isUserExists) {
             throw new NeedAcquaintanceException();
         }
     }
@@ -106,15 +100,9 @@ final class AddMealTelegramCommand extends BaseMultipleStepTelegramCommand
             throw new \InvalidArgumentException('Переданы некорректные данные');
         }
 
-        $telegramUser = $this->getTelegramUser($update);
-
-        if (!$telegramUser) {
-            throw new \InvalidArgumentException('Не удалось определить пользователя telegram');
-        }
-
         /** @var AddMealData $data */
         $command = new AddMealCommand(
-            telegramUserId: $telegramUser->getId(),
+            telegramUserId: $this->telegramUser->getId(),
             meal: $data->meal,
         );
 
@@ -140,7 +128,7 @@ final class AddMealTelegramCommand extends BaseMultipleStepTelegramCommand
      */
     protected function step0(BotApi $api, Update $update, string $chatId, AddMealData $data): void
     {
-        $this->sendTextMessage($api, $chatId, 'Напиши, что ты съел(а) (например, "Говядина вареная: 150 г")');
+        $this->sendTextMessage($api, $chatId, 'Напиши, что ты съел (например, "Говядина вареная: 150 г")');
     }
 
     /**
@@ -155,7 +143,7 @@ final class AddMealTelegramCommand extends BaseMultipleStepTelegramCommand
         $meal = trim((string)$update->getMessage()?->getText());
 
         if (empty($meal)) {
-            throw new InvalidParameterException('Ты ничего не написал(а)');
+            throw new InvalidParameterException('Ты ничего не написал');
         }
 
         $data->meal = $meal;
