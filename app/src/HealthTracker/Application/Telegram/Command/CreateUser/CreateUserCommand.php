@@ -6,7 +6,6 @@ namespace App\HealthTracker\Application\Telegram\Command\CreateUser;
 
 use App\HealthTracker\Domain\Enum\ActivityLevel;
 use App\HealthTracker\Domain\Enum\Gender;
-use App\HealthTracker\Domain\Enum\WeightTargetType;
 use App\Shared\Application\Command\CommandInterface;
 use DateTimeInterface;
 
@@ -23,6 +22,5 @@ final readonly class CreateUserCommand implements CommandInterface
         public string|float $initialWeight,
         public string|float $targetWeight,
         public ActivityLevel $activityLevel,
-        public WeightTargetType $weightTargetType,
     ) {}
 }

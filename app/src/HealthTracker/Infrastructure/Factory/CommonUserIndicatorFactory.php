@@ -8,7 +8,6 @@ use App\HealthTracker\Domain\Calculator\BodyMassIndex\BodyMassIndexCalculatorInt
 use App\HealthTracker\Domain\Entity\User;
 use App\HealthTracker\Domain\Entity\UserIndicator;
 use App\HealthTracker\Domain\Enum\ActivityLevel;
-use App\HealthTracker\Domain\Enum\WeightTargetType;
 use App\HealthTracker\Domain\Factory\UserIndicatorFactoryInterface;
 use App\HealthTracker\Domain\ValueObject\Shared\Weight;
 use App\HealthTracker\Domain\ValueObject\UserIndicator\Height;
@@ -25,7 +24,6 @@ final readonly class CommonUserIndicatorFactory implements UserIndicatorFactoryI
         string|float $initialWeight,
         string|float $targetWeight,
         ActivityLevel $activityLevel,
-        WeightTargetType $weightTargetType,
     ): UserIndicator
     {
         $userIndicator = new UserIndicator(
@@ -37,7 +35,6 @@ final readonly class CommonUserIndicatorFactory implements UserIndicatorFactoryI
         $userIndicator->initialWeight = new Weight($initialWeight);
         $userIndicator->targetWeight = new Weight($targetWeight);
         $userIndicator->activityLevel = $activityLevel;
-        $userIndicator->weightTargetType = $weightTargetType;
 
         return $userIndicator;
     }

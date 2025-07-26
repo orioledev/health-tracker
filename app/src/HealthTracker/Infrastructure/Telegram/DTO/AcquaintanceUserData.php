@@ -6,7 +6,6 @@ namespace App\HealthTracker\Infrastructure\Telegram\DTO;
 
 use App\HealthTracker\Domain\Enum\ActivityLevel;
 use App\HealthTracker\Domain\Enum\Gender;
-use App\HealthTracker\Domain\Enum\WeightTargetType;
 use App\HealthTracker\Infrastructure\Telegram\Handler\MultipleStepHandlerDataInterface;
 use DateTimeInterface;
 
@@ -19,7 +18,6 @@ final class AcquaintanceUserData implements MultipleStepHandlerDataInterface
         public string|float|null $initialWeight = null,
         public string|float|null $targetWeight = null,
         public ?ActivityLevel $activityLevel = null,
-        public ?WeightTargetType $weightTargetType = null,
     ) {}
 
     public function toArray(): array
@@ -31,7 +29,6 @@ final class AcquaintanceUserData implements MultipleStepHandlerDataInterface
             'initialWeight' => $this->initialWeight,
             'targetWeight' => $this->targetWeight,
             'activityLevel' => $this->activityLevel,
-            'weightTargetType' => $this->weightTargetType,
         ];
     }
 }

@@ -82,7 +82,6 @@ final readonly class CreateUserCommandHandler implements CommandHandlerInterface
             initialWeight: $command->initialWeight,
             targetWeight: $command->targetWeight,
             activityLevel: $command->activityLevel,
-            weightTargetType: $command->weightTargetType,
         );
     }
 
