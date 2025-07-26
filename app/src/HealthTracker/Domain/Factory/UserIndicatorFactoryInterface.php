@@ -7,7 +7,6 @@ namespace App\HealthTracker\Domain\Factory;
 use App\HealthTracker\Domain\Entity\User;
 use App\HealthTracker\Domain\Entity\UserIndicator;
 use App\HealthTracker\Domain\Enum\ActivityLevel;
-use App\HealthTracker\Domain\Enum\WeightTargetType;
 
 interface UserIndicatorFactoryInterface
 {
@@ -17,6 +16,5 @@ interface UserIndicatorFactoryInterface
         string|float $initialWeight,
         string|float $targetWeight,
         ActivityLevel $activityLevel,
-        WeightTargetType $weightTargetType,
     ): UserIndicator;
 }
