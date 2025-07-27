@@ -2,6 +2,7 @@
 ✅ Пол: {{ userData.gender.getLabel() }}
 ✅ Рост: {{ userData.height }} см.
 ✅ Текущий вес: {{ userData.initialWeight }} кг.
+✅ Индекс массы тела: {{ userData.initialBmi|round(1) }}
 ✅ Вес, к которому ты стремишься: {{ userData.targetWeight }} кг.
 ✅ Цель: {{ userData.weightTargetType.getLabel() }}
 ✅ Уровень физической активности: {{ userData.activityLevel.getLabel() }}

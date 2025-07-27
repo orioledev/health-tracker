@@ -24,6 +24,7 @@ final readonly class UserData
         public string|float $targetWeight,
         public ActivityLevel $activityLevel,
         public WeightTargetType $weightTargetType,
+        public string|float $initialBmi,
     ) {}
 
     public static function fromEntity(User $user): self
@@ -40,6 +41,7 @@ final readonly class UserData
             targetWeight: $user->indicator->targetWeight->value(),
             activityLevel: $user->indicator->activityLevel,
             weightTargetType: $user->indicator->weightTargetType,
+            initialBmi: $user->indicator->getInitialBmi(),
         );
     }
 
@@ -57,6 +59,7 @@ final readonly class UserData
             'targetWeight' => $this->targetWeight,
             'activityLevel' => $this->activityLevel,
             'weightTargetType' => $this->weightTargetType,
+            'initialBmi' => $this->initialBmi,
         ];
     }
 }

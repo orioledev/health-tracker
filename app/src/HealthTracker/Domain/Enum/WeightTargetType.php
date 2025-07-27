@@ -15,7 +15,7 @@ enum WeightTargetType: int
         return match ($this) {
             self::LOSS => 'Снижение веса',
             self::MAINTENANCE => 'Поддержание веса',
-            self::GAIN => 'Набор мышечной массы',
+            self::GAIN => 'Набор веса',
         };
     }
 
@@ -41,5 +41,16 @@ enum WeightTargetType: int
             self::MAINTENANCE => 1,
             self::GAIN => 1.15,
         };
+    }
+
+    public static function getWeightTargetTypeByWeightDiff(float $diff): self
+    {
+        if ($diff < 0) {
+            return self::LOSS;
+        } elseif ($diff > 0) {
+            return self::GAIN;
+        }
+
+        return self::MAINTENANCE;
     }
 }

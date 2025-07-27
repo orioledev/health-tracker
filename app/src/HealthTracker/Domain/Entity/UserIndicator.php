@@ -31,13 +31,27 @@ class UserIndicator
     #[ORM\Column(type: 'weight', precision: 5, scale: 2, nullable: true)]
     public ?Weight $initialWeight = null {
         get => $this->initialWeight;
-        set => $this->initialWeight = $value;
+        set {
+            $this->initialWeight = $value;
+
+            if ($this->initialWeight !== null && $this->targetWeight !== null) {
+                $diff = round($this->targetWeight->value() - $this->initialWeight->value(), 1);
+                $this->weightTargetType = WeightTargetType::getWeightTargetTypeByWeightDiff($diff);
+            }
+        }
     }
 
     #[ORM\Column(type: 'weight', precision: 5, scale: 2, nullable: true)]
     public ?Weight $targetWeight = null {
         get => $this->targetWeight;
-        set => $this->targetWeight = $value;
+        set {
+            $this->targetWeight = $value;
+
+            if ($this->initialWeight !== null && $this->targetWeight !== null) {
+                $diff = round($this->targetWeight->value() - $this->initialWeight->value(), 1);
+                $this->weightTargetType = WeightTargetType::getWeightTargetTypeByWeightDiff($diff);
+            }
+        }
     }
 
     #[ORM\Column(name: 'activity_level', type: Types::SMALLINT, nullable: true, enumType: ActivityLevel::class)]
@@ -47,9 +61,8 @@ class UserIndicator
     }
 
     #[ORM\Column(name: 'weight_target_type', type: Types::SMALLINT, nullable: true, enumType: WeightTargetType::class)]
-    public ?WeightTargetType $weightTargetType = null {
+    private(set) ?WeightTargetType $weightTargetType = null {
         get => $this->weightTargetType;
-        set => $this->weightTargetType = $value;
     }
 
     private(set) ?Weight $currentWeight = null {

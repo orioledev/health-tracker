@@ -8,7 +8,6 @@ use App\HealthTracker\Application\Telegram\Command\CreateUser\CreateUserCommand;
 use App\HealthTracker\Application\Telegram\Command\CreateUser\CreateUserCommandResult;
 use App\HealthTracker\Domain\Enum\ActivityLevel;
 use App\HealthTracker\Domain\Enum\Gender;
-use App\HealthTracker\Domain\Enum\WeightTargetType;
 use App\HealthTracker\Domain\Exception\UserAlreadyExistsException;
 use App\HealthTracker\Domain\ValueObject\Shared\Weight;
 use App\HealthTracker\Domain\ValueObject\UserIndicator\Height;
@@ -114,7 +113,6 @@ final class AcquaintanceTelegramCommand extends BaseMultipleStepTelegramCommand
             initialWeight: $data->initialWeight,
             targetWeight: $data->targetWeight,
             activityLevel: $data->activityLevel,
-            weightTargetType: $data->weightTargetType,
         );
 
         /** @var CreateUserCommandResult $result */
@@ -284,43 +282,6 @@ final class AcquaintanceTelegramCommand extends BaseMultipleStepTelegramCommand
             throw new InvalidParameterException($errorMessage);
         }
 
-        // Weight target type buttons
-        $buttons = [];
-        foreach (WeightTargetType::getList() as $value => $label) {
-            $buttons[] = [
-                ['text' => $label, 'callback_data' => 'weightTargetType_' . $value]
-            ];
-        }
-
-        $payload = new MessagePayload(
-            chatId: $chatId,
-            text: 'Выбери свою цель',
-            replyMarkup: new InlineKeyboardMarkup($buttons),
-        );
-
-        $this->sendApiMessage($api, $payload);
-    }
-
-    /**
-     * @param BotApi $api
-     * @param Update $update
-     * @param string $chatId
-     * @param AcquaintanceUserData $data
-     * @return void
-     * @throws Exception
-     * @throws InvalidArgumentException
-     */
-    protected function step6(BotApi $api, Update $update, string $chatId, AcquaintanceUserData $data): void
-    {
-        $weightTargetTypeEnumValue = $this->getEnumValue($update);
-
-        try {
-            $weightTargetType = WeightTargetType::from((int)$weightTargetTypeEnumValue);
-            $data->weightTargetType = $weightTargetType;
-        } catch (ValueError) {
-            throw new InvalidParameterException('Выбрана некорректная цель');
-        }
-
         // Activity level buttons
         $buttons = [];
         foreach (ActivityLevel::getList() as $value => $label) {
@@ -345,7 +306,7 @@ final class AcquaintanceTelegramCommand extends BaseMultipleStepTelegramCommand
      * @param AcquaintanceUserData $data
      * @return void
      */
-    protected function step7(BotApi $api, Update $update, string $chatId, AcquaintanceUserData $data): void
+    protected function step6(BotApi $api, Update $update, string $chatId, AcquaintanceUserData $data): void
     {
         $activityLevelEnumValue = $this->getEnumValue($update);
 
@@ -357,7 +318,7 @@ final class AcquaintanceTelegramCommand extends BaseMultipleStepTelegramCommand
         }
     }
 
-    protected function getEnumValue(Update $update): ?string
+    private function getEnumValue(Update $update): ?string
     {
         $regexp = '/[a-zA-Z_]+_(\d+)/';
 
