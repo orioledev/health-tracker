@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\HealthTracker\Infrastructure\Telegram\Command;
 
 use App\HealthTracker\Infrastructure\Exception\InvalidParameterException;
-use App\HealthTracker\Infrastructure\Exception\NeedAcquaintanceException;
 use App\HealthTracker\Infrastructure\Telegram\Handler\BaseMultipleStepHandler;
 use App\HealthTracker\Infrastructure\Telegram\Handler\MultipleStepHandlerDataInterface;
 use App\Shared\Application\Bus\QueryBusInterface;
@@ -14,7 +13,6 @@ use TelegramBot\Api\BotApi;
 use TelegramBot\Api\Exception;
 use TelegramBot\Api\InvalidArgumentException;
 use TelegramBot\Api\Types\Update;
-use Throwable;
 use Twig\Environment;
 
 abstract class BaseMultipleStepTelegramCommand extends BaseTelegramCommand
@@ -42,12 +40,9 @@ abstract class BaseMultipleStepTelegramCommand extends BaseTelegramCommand
      * @throws Exception
      * @throws InvalidArgumentException
      */
-    public function execute(BotApi $api, Update $update): void
+    public function executeInternal(BotApi $api, Update $update): void
     {
-        parent::execute($api, $update);
-
-        $message = $this->telegramMessage;
-        $chatId = (string)$message?->getChat()->getId();
+        $chatId = $this->chatId;
 
         try {
             $this->beforeExecute($api, $update);
@@ -80,13 +75,6 @@ abstract class BaseMultipleStepTelegramCommand extends BaseTelegramCommand
             $prev = $e->getPrevious() ?? $e;
             $errorMessage = $prev->getMessage() . '. Попробуй ввести еще раз';
             $this->sendErrorMessage($api, $chatId, $errorMessage);
-            return;
-        } catch (NeedAcquaintanceException) {
-            $this->sendNeedAcquaintanceMessage($api, $chatId);
-            return;
-        } catch (Throwable $e) {
-            $prev = $e->getPrevious() ?? $e;
-            $this->sendErrorMessage($api, $chatId, $prev->getMessage());
             return;
         }
     }

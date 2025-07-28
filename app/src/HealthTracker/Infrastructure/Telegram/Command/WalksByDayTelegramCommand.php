@@ -8,6 +8,7 @@ use App\HealthTracker\Application\Query\Walk\FindWalksByDate\FindWalksByDateQuer
 use App\HealthTracker\Application\Query\Walk\FindWalksByDate\FindWalksByDateQueryResult;
 use App\HealthTracker\Application\Query\Walk\GetDateWithWalks\GetDateWithWalksQuery;
 use App\HealthTracker\Domain\Enum\Direction;
+use App\HealthTracker\Infrastructure\Exception\NeedAcquaintanceException;
 use App\HealthTracker\Infrastructure\Telegram\Enum\TelegramCommand;
 use App\HealthTracker\Infrastructure\Telegram\Message\MessagePayload;
 use DateMalformedStringException;
@@ -49,14 +50,16 @@ final class WalksByDayTelegramCommand extends BaseTelegramCommand
      * @return void
      * @throws Exception
      * @throws InvalidArgumentException
+     * @throws NeedAcquaintanceException
      * @throws DateMalformedStringException
      */
-    public function execute(BotApi $api, Update $update): void
+    public function executeInternal(BotApi $api, Update $update): void
     {
-        parent::execute($api, $update);
+        if (!$this->isUserExists) {
+            throw new NeedAcquaintanceException();
+        }
 
-        $message = $this->telegramMessage;
-        $chatId = (string)$message?->getChat()->getId();
+        $chatId = $this->chatId;
 
         $date = $this->getDate($update);
         $date = $date ?: new DateTimeImmutable();

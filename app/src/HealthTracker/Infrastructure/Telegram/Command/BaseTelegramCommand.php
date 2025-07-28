@@ -6,6 +6,8 @@ namespace App\HealthTracker\Infrastructure\Telegram\Command;
 
 use App\HealthTracker\Application\DTO\UserData;
 use App\HealthTracker\Application\Query\User\FindUserByTelegramUserId\FindUserByTelegramUserIdQuery;
+use App\HealthTracker\Infrastructure\Exception\InvalidParameterException;
+use App\HealthTracker\Infrastructure\Exception\NeedAcquaintanceException;
 use App\HealthTracker\Infrastructure\Telegram\Enum\TelegramCommand;
 use App\HealthTracker\Infrastructure\Telegram\Message\MessagePayload;
 use App\Shared\Application\Bus\QueryBusInterface;
@@ -30,6 +32,11 @@ abstract class BaseTelegramCommand extends AbstractCommand implements PublicComm
             return $this->telegramMessage;
         }
     }
+    protected ?string $chatId = null {
+        get {
+            return $this->chatId;
+        }
+    }
     protected ?User $telegramUser = null {
         get {
             return $this->telegramUser;
@@ -52,6 +59,8 @@ abstract class BaseTelegramCommand extends AbstractCommand implements PublicComm
         protected readonly QueryBusInterface $queryBus,
     ) {}
 
+    abstract protected function executeInternal(BotApi $api, Update $update): void;
+
     abstract protected function getSuccessMessageTemplate(): string;
 
     public function getSortOrder(): int
@@ -71,25 +80,45 @@ abstract class BaseTelegramCommand extends AbstractCommand implements PublicComm
         return null;
     }
 
+    /**
+     * @param BotApi $api
+     * @param Update $update
+     * @return void
+     * @throws Exception
+     * @throws InvalidArgumentException
+     */
     public function execute(BotApi $api, Update $update): void
     {
-        $this->init($api, $update);
-    }
-
-    protected function init(BotApi $api, Update $update): void
-    {
         $this->telegramMessage = $this->getTelegramMessage($update);
+        $this->chatId = (string)$this->telegramMessage?->getChat()->getId();
+
         $this->telegramUser = $this->getTelegramUser($update);
 
-        if (!$this->telegramUser) {
-            throw new \InvalidArgumentException('Не удалось определить пользователя telegram');
+        try {
+            if (!$this->telegramUser) {
+                throw new \InvalidArgumentException('Не удалось определить пользователя telegram');
+            }
+
+            $this->user = $this->queryBus->ask(
+                new FindUserByTelegramUserIdQuery($this->telegramUser->getId())
+            );
+
+            $this->isUserExists = $this->user !== null;
+
+            $this->executeInternal($api, $update);
+        } catch (InvalidParameterException $e) {
+            $prev = $e->getPrevious() ?? $e;
+            $errorMessage = $prev->getMessage() . '. Попробуй ввести еще раз';
+            $this->sendErrorMessage($api, $this->chatId, $errorMessage);
+            return;
+        } catch (NeedAcquaintanceException) {
+            $this->sendNeedAcquaintanceMessage($api, $this->chatId);
+            return;
+        } catch (Throwable $e) {
+            $prev = $e->getPrevious() ?? $e;
+            $this->sendErrorMessage($api, $this->chatId, $prev->getMessage());
+            return;
         }
-
-        $this->user = $this->queryBus->ask(
-            new FindUserByTelegramUserIdQuery($this->telegramUser->getId())
-        );
-
-        $this->isUserExists = $this->user !== null;
     }
 
     protected function getTelegramMessage(Update $update): ?Message

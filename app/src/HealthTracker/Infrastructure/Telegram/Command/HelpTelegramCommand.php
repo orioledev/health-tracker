@@ -41,10 +41,8 @@ final class HelpTelegramCommand extends BaseTelegramCommand
      * @throws Exception
      * @throws InvalidArgumentException
      */
-    public function execute(BotApi $api, Update $update): void
+    public function executeInternal(BotApi $api, Update $update): void
     {
-        parent::execute($api, $update);
-
         if ($this->isUserExists) {
             $commandsList = TelegramCommand::getHelpCommandsListForRegisteredUser();
         } else {
