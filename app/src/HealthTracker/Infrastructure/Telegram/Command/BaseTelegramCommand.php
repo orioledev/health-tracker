@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\HealthTracker\Infrastructure\Telegram\Command;
 
-use App\HealthTracker\Application\Telegram\Query\CheckUserExistenceByTelegramUserId\CheckUserExistenceByTelegramUserIdQuery;
+use App\HealthTracker\Application\DTO\UserData;
+use App\HealthTracker\Application\Query\User\FindUserByTelegramUserId\FindUserByTelegramUserIdQuery;
 use App\HealthTracker\Infrastructure\Telegram\Enum\TelegramCommand;
 use App\HealthTracker\Infrastructure\Telegram\Message\MessagePayload;
 use App\Shared\Application\Bus\QueryBusInterface;
@@ -32,6 +33,11 @@ abstract class BaseTelegramCommand extends AbstractCommand implements PublicComm
     protected ?User $telegramUser = null {
         get {
             return $this->telegramUser;
+        }
+    }
+    protected ?UserData $user = null {
+        get {
+            return $this->user;
         }
     }
     protected ?bool $isUserExists = null {
@@ -79,9 +85,11 @@ abstract class BaseTelegramCommand extends AbstractCommand implements PublicComm
             throw new \InvalidArgumentException('Не удалось определить пользователя telegram');
         }
 
-        $this->isUserExists = $this->queryBus->ask(
-            new CheckUserExistenceByTelegramUserIdQuery($this->telegramUser->getId())
+        $this->user = $this->queryBus->ask(
+            new FindUserByTelegramUserIdQuery($this->telegramUser->getId())
         );
+
+        $this->isUserExists = $this->user !== null;
     }
 
     protected function getTelegramMessage(Update $update): ?Message

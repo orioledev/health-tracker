@@ -27,24 +27,24 @@ class UserDoctrineRepository extends ServiceEntityRepository implements UserRepo
         return $this->find($userId);
     }
 
-    public function findByTelegramUserId(TelegramUserId $telegramUserId): ?User
-    {
-        return $this->findOneBy(['telegramUserId' => $telegramUserId->value()]);
-    }
-
     /**
-     * @param TelegramUserId $telegramUserId
+     * @param UserId $userId
      * @return User
      * @throws UserNotFoundException
      */
-    public function findByTelegramUserIdOrFail(TelegramUserId $telegramUserId): User
+    public function findByUserIdOrFail(UserId $userId): User
     {
-        $user = $this->findByTelegramUserId($telegramUserId);
+        $user = $this->findById($userId);
 
         if (!$user) {
             throw new UserNotFoundException('Пользователь не найден');
         }
 
+        return $user;
+    }
+
+    public function findByTelegramUserId(TelegramUserId $telegramUserId): ?User
+    {
         return $this->findOneBy(['telegramUserId' => $telegramUserId->value()]);
     }
 

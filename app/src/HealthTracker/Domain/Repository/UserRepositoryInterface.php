@@ -12,9 +12,9 @@ interface UserRepositoryInterface
 {
     public function findById(UserId $userId): ?User;
 
-    public function findByTelegramUserId(TelegramUserId $telegramUserId): ?User;
+    public function findByUserIdOrFail(UserId $userId): User;
 
-    public function findByTelegramUserIdOrFail(TelegramUserId $telegramUserId): User;
+    public function findByTelegramUserId(TelegramUserId $telegramUserId): ?User;
 
     public function existsByTelegramUserId(TelegramUserId $telegramUserId): bool;
 

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\HealthTracker\Infrastructure\Telegram\Command;
 
-use App\HealthTracker\Application\Telegram\Command\CreateUser\CreateUserCommand;
-use App\HealthTracker\Application\Telegram\Command\CreateUser\CreateUserCommandResult;
+use App\HealthTracker\Application\Command\CreateUser\CreateUserCommand;
+use App\HealthTracker\Application\Command\CreateUser\CreateUserCommandResult;
 use App\HealthTracker\Domain\Enum\ActivityLevel;
 use App\HealthTracker\Domain\Enum\Gender;
 use App\HealthTracker\Domain\Exception\UserAlreadyExistsException;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\HealthTracker\Infrastructure\Telegram\Command;
 
-use App\HealthTracker\Application\Telegram\Command\AddWeightMeasurement\AddWeightMeasurementCommand;
-use App\HealthTracker\Application\Telegram\Command\AddWeightMeasurement\AddWeightMeasurementCommandResult;
+use App\HealthTracker\Application\Command\AddWeightMeasurement\AddWeightMeasurementCommand;
+use App\HealthTracker\Application\Command\AddWeightMeasurement\AddWeightMeasurementCommandResult;
 use App\HealthTracker\Domain\ValueObject\Shared\Weight;
 use App\HealthTracker\Infrastructure\Exception\InvalidParameterException;
 use App\HealthTracker\Infrastructure\Exception\NeedAcquaintanceException;
@@ -103,7 +103,7 @@ final class AddWeightMeasurementTelegramCommand extends BaseMultipleStepTelegram
 
         /** @var AddWeightMeasurementData $data */
         $command = new AddWeightMeasurementCommand(
-            telegramUserId: $this->telegramUser->getId(),
+            userId: $this->user->id,
             weight: $data->weight,
         );
 
