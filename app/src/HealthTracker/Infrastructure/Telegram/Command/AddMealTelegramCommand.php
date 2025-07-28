@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\HealthTracker\Infrastructure\Telegram\Command;
 
-use App\HealthTracker\Application\Telegram\Command\AddMeal\AddMealCommand;
-use App\HealthTracker\Application\Telegram\Command\AddMeal\AddMealCommandResult;
+use App\HealthTracker\Application\Command\AddMeal\AddMealCommand;
+use App\HealthTracker\Application\Command\AddMeal\AddMealCommandResult;
 use App\HealthTracker\Infrastructure\Exception\InvalidParameterException;
 use App\HealthTracker\Infrastructure\Exception\NeedAcquaintanceException;
 use App\HealthTracker\Infrastructure\Telegram\DTO\AddMealData;
@@ -102,7 +102,7 @@ final class AddMealTelegramCommand extends BaseMultipleStepTelegramCommand
 
         /** @var AddMealData $data */
         $command = new AddMealCommand(
-            telegramUserId: $this->telegramUser->getId(),
+            userId: $this->user->id,
             meal: $data->meal,
         );
 

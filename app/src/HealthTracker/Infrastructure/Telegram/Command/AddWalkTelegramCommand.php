@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\HealthTracker\Infrastructure\Telegram\Command;
 
-use App\HealthTracker\Application\Telegram\Command\AddWalk\AddWalkCommand;
-use App\HealthTracker\Application\Telegram\Command\AddWalk\AddWalkCommandResult;
+use App\HealthTracker\Application\Command\AddWalk\AddWalkCommand;
+use App\HealthTracker\Application\Command\AddWalk\AddWalkCommandResult;
 use App\HealthTracker\Domain\ValueObject\Shared\StepsAmount;
 use App\HealthTracker\Infrastructure\Exception\InvalidParameterException;
 use App\HealthTracker\Infrastructure\Exception\NeedAcquaintanceException;
@@ -103,7 +103,7 @@ final class AddWalkTelegramCommand extends BaseMultipleStepTelegramCommand
 
         /** @var AddWalkData $data */
         $command = new AddWalkCommand(
-            telegramUserId: $this->telegramUser->getId(),
+            userId: $this->user->id,
             steps: $data->steps,
         );
 

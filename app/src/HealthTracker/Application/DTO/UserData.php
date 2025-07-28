@@ -13,6 +13,7 @@ use DateTimeInterface;
 final readonly class UserData
 {
     public function __construct(
+        public int $id,
         public int $telegramUserId,
         public ?string $telegramUsername,
         public string $firstName,
@@ -30,6 +31,7 @@ final readonly class UserData
     public static function fromEntity(User $user): self
     {
         return new self(
+            id: $user->id->value(),
             telegramUserId: $user->telegramUserId->value(),
             telegramUsername: $user->telegramUsername->value(),
             firstName: $user->fullName->firstName(),
@@ -48,6 +50,7 @@ final readonly class UserData
     public function toArray(): array
     {
         return [
+            'id' => $this->id,
             'telegramUserId' => $this->telegramUserId,
             'telegramUsername' => $this->telegramUsername,
             'firstName' => $this->firstName,

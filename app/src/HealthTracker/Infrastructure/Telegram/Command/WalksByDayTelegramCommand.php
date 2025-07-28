@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\HealthTracker\Infrastructure\Telegram\Command;
 
-use App\HealthTracker\Application\Telegram\Query\Walk\FindWalksByDate\FindWalksByDateQuery;
-use App\HealthTracker\Application\Telegram\Query\Walk\FindWalksByDate\FindWalksByDateQueryResult;
-use App\HealthTracker\Application\Telegram\Query\Walk\GetDateWithWalks\GetDateWithWalksQuery;
+use App\HealthTracker\Application\Query\Walk\FindWalksByDate\FindWalksByDateQuery;
+use App\HealthTracker\Application\Query\Walk\FindWalksByDate\FindWalksByDateQueryResult;
+use App\HealthTracker\Application\Query\Walk\GetDateWithWalks\GetDateWithWalksQuery;
 use App\HealthTracker\Domain\Enum\Direction;
 use App\HealthTracker\Infrastructure\Telegram\Enum\TelegramCommand;
 use App\HealthTracker\Infrastructure\Telegram\Message\MessagePayload;
@@ -66,7 +66,7 @@ final class WalksByDayTelegramCommand extends BaseTelegramCommand
         /** @var FindWalksByDateQueryResult $result */
         $result = $this->queryBus->ask(
             new FindWalksByDateQuery(
-                telegramUserId: $this->telegramUser->getId(),
+                userId: $this->user->id,
                 date: $date,
             ),
         );
@@ -162,7 +162,7 @@ final class WalksByDayTelegramCommand extends BaseTelegramCommand
     {
         return $this->queryBus->ask(
             new GetDateWithWalksQuery(
-                telegramUserId: $this->telegramUser->getId(),
+                userId: $this->user->id,
                 date: $date,
                 direction: Direction::PREV
             )
@@ -173,7 +173,7 @@ final class WalksByDayTelegramCommand extends BaseTelegramCommand
     {
         return $this->queryBus->ask(
             new GetDateWithWalksQuery(
-                telegramUserId: $this->telegramUser->getId(),
+                userId: $this->user->id,
                 date: $date,
                 direction: Direction::NEXT
             )
