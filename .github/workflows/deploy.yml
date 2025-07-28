@@ -2,7 +2,7 @@ name: Deploy to Production
 
 on:
     push:
-        branches: [ master, deploy-test ]
+        branches: [ master, deploy-test, 'feat/universal-usecases' ]
 jobs:
     deploy:
         runs-on: ubuntu-latest
