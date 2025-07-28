@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\HealthTracker\Infrastructure\Telegram\Command;
+namespace App\HealthTracker\Presentation\Telegram\Command;
 
 use App\HealthTracker\Application\Command\CreateUser\CreateUserCommand;
 use App\HealthTracker\Application\Command\CreateUser\CreateUserCommandResult;
@@ -11,12 +11,12 @@ use App\HealthTracker\Domain\Enum\Gender;
 use App\HealthTracker\Domain\Exception\UserAlreadyExistsException;
 use App\HealthTracker\Domain\ValueObject\Shared\Weight;
 use App\HealthTracker\Domain\ValueObject\UserIndicator\Height;
-use App\HealthTracker\Infrastructure\Exception\InvalidParameterException;
-use App\HealthTracker\Infrastructure\Telegram\DTO\AcquaintanceUserData;
-use App\HealthTracker\Infrastructure\Telegram\Enum\TelegramCommand;
-use App\HealthTracker\Infrastructure\Telegram\Handler\AcquaintanceHandler;
-use App\HealthTracker\Infrastructure\Telegram\Handler\MultipleStepHandlerDataInterface;
-use App\HealthTracker\Infrastructure\Telegram\Message\MessagePayload;
+use App\HealthTracker\Presentation\Exception\InvalidParameterException;
+use App\HealthTracker\Presentation\Telegram\DTO\AcquaintanceUserData;
+use App\HealthTracker\Presentation\Telegram\Enum\TelegramCommand;
+use App\HealthTracker\Presentation\Telegram\Handler\AcquaintanceHandler;
+use App\HealthTracker\Presentation\Telegram\Handler\MultipleStepHandlerDataInterface;
+use App\HealthTracker\Presentation\Telegram\Message\MessagePayload;
 use App\Shared\Application\Bus\CommandBusInterface;
 use App\Shared\Application\Bus\QueryBusInterface;
 use DateMalformedStringException;

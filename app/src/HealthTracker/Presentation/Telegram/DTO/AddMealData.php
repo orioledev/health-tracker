@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\HealthTracker\Infrastructure\Telegram\DTO;
+namespace App\HealthTracker\Presentation\Telegram\DTO;
 
-use App\HealthTracker\Infrastructure\Telegram\Handler\MultipleStepHandlerDataInterface;
+use App\HealthTracker\Presentation\Telegram\Handler\MultipleStepHandlerDataInterface;
 
 final class AddMealData implements MultipleStepHandlerDataInterface
 {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\HealthTracker\Infrastructure\Telegram\Handler;
+namespace App\HealthTracker\Presentation\Telegram\Handler;
 
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Cache\InvalidArgumentException;

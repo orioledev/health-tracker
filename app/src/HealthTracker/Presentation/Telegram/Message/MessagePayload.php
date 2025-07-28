@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\HealthTracker\Infrastructure\Telegram\Message;
+namespace App\HealthTracker\Presentation\Telegram\Message;
 
 use TelegramBot\Api\Types\ForceReply;
 use TelegramBot\Api\Types\Inline\InlineKeyboardMarkup;

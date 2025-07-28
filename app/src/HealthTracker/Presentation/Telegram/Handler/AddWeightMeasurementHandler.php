@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\HealthTracker\Infrastructure\Telegram\Handler;
+namespace App\HealthTracker\Presentation\Telegram\Handler;
 
-use App\HealthTracker\Infrastructure\Telegram\DTO\AddWeightMeasurementData;
+use App\HealthTracker\Presentation\Telegram\DTO\AddWeightMeasurementData;
 
 class AddWeightMeasurementHandler extends BaseMultipleStepHandler
 {

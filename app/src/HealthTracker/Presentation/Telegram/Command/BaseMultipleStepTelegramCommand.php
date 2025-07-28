@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\HealthTracker\Infrastructure\Telegram\Command;
+namespace App\HealthTracker\Presentation\Telegram\Command;
 
-use App\HealthTracker\Infrastructure\Exception\InvalidParameterException;
-use App\HealthTracker\Infrastructure\Telegram\Handler\BaseMultipleStepHandler;
-use App\HealthTracker\Infrastructure\Telegram\Handler\MultipleStepHandlerDataInterface;
+use App\HealthTracker\Presentation\Exception\InvalidParameterException;
+use App\HealthTracker\Presentation\Telegram\Handler\BaseMultipleStepHandler;
+use App\HealthTracker\Presentation\Telegram\Handler\MultipleStepHandlerDataInterface;
 use App\Shared\Application\Bus\QueryBusInterface;
 use BadMethodCallException;
 use TelegramBot\Api\BotApi;
@@ -39,6 +39,7 @@ abstract class BaseMultipleStepTelegramCommand extends BaseTelegramCommand
      * @return void
      * @throws Exception
      * @throws InvalidArgumentException
+     * @throws \Psr\Cache\InvalidArgumentException
      */
     public function executeInternal(BotApi $api, Update $update): void
     {

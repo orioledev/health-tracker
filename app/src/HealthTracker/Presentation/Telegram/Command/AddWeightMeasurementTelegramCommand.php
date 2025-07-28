@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace App\HealthTracker\Infrastructure\Telegram\Command;
+namespace App\HealthTracker\Presentation\Telegram\Command;
 
 use App\HealthTracker\Application\Command\AddWeightMeasurement\AddWeightMeasurementCommand;
 use App\HealthTracker\Application\Command\AddWeightMeasurement\AddWeightMeasurementCommandResult;
 use App\HealthTracker\Domain\ValueObject\Shared\Weight;
-use App\HealthTracker\Infrastructure\Exception\InvalidParameterException;
-use App\HealthTracker\Infrastructure\Exception\NeedAcquaintanceException;
-use App\HealthTracker\Infrastructure\Telegram\DTO\AddWeightMeasurementData;
-use App\HealthTracker\Infrastructure\Telegram\Enum\TelegramCommand;
-use App\HealthTracker\Infrastructure\Telegram\Handler\AddWeightMeasurementHandler;
-use App\HealthTracker\Infrastructure\Telegram\Handler\MultipleStepHandlerDataInterface;
+use App\HealthTracker\Presentation\Exception\InvalidParameterException;
+use App\HealthTracker\Presentation\Exception\NeedAcquaintanceException;
+use App\HealthTracker\Presentation\Telegram\DTO\AddWeightMeasurementData;
+use App\HealthTracker\Presentation\Telegram\Enum\TelegramCommand;
+use App\HealthTracker\Presentation\Telegram\Handler\AddWeightMeasurementHandler;
+use App\HealthTracker\Presentation\Telegram\Handler\MultipleStepHandlerDataInterface;
 use App\Shared\Application\Bus\CommandBusInterface;
 use App\Shared\Application\Bus\QueryBusInterface;
 use TelegramBot\Api\BotApi;

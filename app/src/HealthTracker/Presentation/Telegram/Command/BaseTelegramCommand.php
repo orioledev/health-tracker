@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\HealthTracker\Infrastructure\Telegram\Command;
+namespace App\HealthTracker\Presentation\Telegram\Command;
 
 use App\HealthTracker\Application\DTO\UserData;
 use App\HealthTracker\Application\Query\User\FindUserByTelegramUserId\FindUserByTelegramUserIdQuery;
-use App\HealthTracker\Infrastructure\Exception\InvalidParameterException;
-use App\HealthTracker\Infrastructure\Exception\NeedAcquaintanceException;
-use App\HealthTracker\Infrastructure\Telegram\Enum\TelegramCommand;
-use App\HealthTracker\Infrastructure\Telegram\Message\MessagePayload;
+use App\HealthTracker\Presentation\Exception\InvalidParameterException;
+use App\HealthTracker\Presentation\Exception\NeedAcquaintanceException;
+use App\HealthTracker\Presentation\Telegram\Enum\TelegramCommand;
+use App\HealthTracker\Presentation\Telegram\Message\MessagePayload;
 use App\Shared\Application\Bus\QueryBusInterface;
 use BoShurik\TelegramBotBundle\Telegram\Command\AbstractCommand;
 use BoShurik\TelegramBotBundle\Telegram\Command\PublicCommandInterface;
@@ -59,6 +59,12 @@ abstract class BaseTelegramCommand extends AbstractCommand implements PublicComm
         protected readonly QueryBusInterface $queryBus,
     ) {}
 
+    /**
+     * @param BotApi $api
+     * @param Update $update
+     * @return void
+     * @throws NeedAcquaintanceException
+     */
     abstract protected function executeInternal(BotApi $api, Update $update): void;
 
     abstract protected function getSuccessMessageTemplate(): string;

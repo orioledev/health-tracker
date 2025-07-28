@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\HealthTracker\Infrastructure\Telegram\Command;
+namespace App\HealthTracker\Presentation\Telegram\Command;
 
-use App\HealthTracker\Infrastructure\Telegram\Enum\TelegramCommand;
+use App\HealthTracker\Presentation\Telegram\Enum\TelegramCommand;
 use TelegramBot\Api\BotApi;
 use TelegramBot\Api\Exception;
 use TelegramBot\Api\InvalidArgumentException;

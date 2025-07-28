@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\HealthTracker\Infrastructure\Telegram\Enum;
+namespace App\HealthTracker\Presentation\Telegram\Enum;
 
 enum TelegramCommand: string
 {

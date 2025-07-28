@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace App\HealthTracker\Infrastructure\Telegram\Command;
+namespace App\HealthTracker\Presentation\Telegram\Command;
 
 use App\HealthTracker\Application\Command\AddMeal\AddMealCommand;
 use App\HealthTracker\Application\Command\AddMeal\AddMealCommandResult;
-use App\HealthTracker\Infrastructure\Exception\InvalidParameterException;
-use App\HealthTracker\Infrastructure\Exception\NeedAcquaintanceException;
-use App\HealthTracker\Infrastructure\Telegram\DTO\AddMealData;
-use App\HealthTracker\Infrastructure\Telegram\Enum\TelegramCommand;
-use App\HealthTracker\Infrastructure\Telegram\Handler\AddMealHandler;
-use App\HealthTracker\Infrastructure\Telegram\Handler\MultipleStepHandlerDataInterface;
+use App\HealthTracker\Presentation\Exception\InvalidParameterException;
+use App\HealthTracker\Presentation\Exception\NeedAcquaintanceException;
+use App\HealthTracker\Presentation\Telegram\DTO\AddMealData;
+use App\HealthTracker\Presentation\Telegram\Enum\TelegramCommand;
+use App\HealthTracker\Presentation\Telegram\Handler\AddMealHandler;
+use App\HealthTracker\Presentation\Telegram\Handler\MultipleStepHandlerDataInterface;
 use App\Shared\Application\Bus\CommandBusInterface;
 use App\Shared\Application\Bus\QueryBusInterface;
 use TelegramBot\Api\BotApi;
